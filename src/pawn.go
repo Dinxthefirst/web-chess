@@ -1,8 +1,6 @@
 package game
 
-import (
-	"fmt"
-)
+import "fmt"
 
 type Pawn struct {
 	color Color
@@ -51,5 +49,5 @@ func (p *Pawn) Color() Color {
 }
 
 func (p *Pawn) Symbol() string {
-	return PieceUnicode[p.Type()][p.Color()]
+	return PieceImages[p.Type()][p.Color()]
 }

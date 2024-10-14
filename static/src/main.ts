@@ -89,7 +89,14 @@ function createSquareDiv(
 function createPieceDiv(piece: Piece | null): HTMLDivElement {
   const pieceDiv = document.createElement("div");
   pieceDiv.classList.add("chess-piece");
-  pieceDiv.innerText = piece ? piece.symbol : "";
+
+  if (piece) {
+    const pieceImg = document.createElement("img");
+    pieceImg.src = piece.symbol;
+    pieceImg.alt = piece.type;
+    pieceDiv.appendChild(pieceImg);
+  }
+
   return pieceDiv;
 }
 

@@ -21,13 +21,13 @@ type Piece interface {
 	Symbol() string
 }
 
-var PieceUnicode = map[string]map[Color]string{
-	"Pawn":   {White: "\u2659", Black: "\u265F"},
-	"Rook":   {White: "\u2656", Black: "\u265C"},
-	"Knight": {White: "\u2658", Black: "\u265E"},
-	"Bishop": {White: "\u2657", Black: "\u265D"},
-	"Queen":  {White: "\u2655", Black: "\u265B"},
-	"King":   {White: "\u2654", Black: "\u265A"},
+var PieceImages = map[string]map[Color]string{
+	"Pawn":   {White: "/static/images/white_pawn.svg", Black: "/static/images/black_pawn.svg"},
+	"Rook":   {White: "/static/images/white_rook.svg", Black: "/static/images/black_rook.svg"},
+	"Knight": {White: "/static/images/white_knight.svg", Black: "/static/images/black_knight.svg"},
+	"Bishop": {White: "/static/images/white_bishop.svg", Black: "/static/images/black_bishop.svg"},
+	"Queen":  {White: "/static/images/white_queen.svg", Black: "/static/images/black_queen.svg"},
+	"King":   {White: "/static/images/white_king.svg", Black: "/static/images/black_king.svg"},
 }
 
 type GameState struct {

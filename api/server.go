@@ -19,6 +19,7 @@ func NewServer() *Server {
 
 	s.PathPrefix("/static/styles/").Handler(http.StripPrefix("/static/styles/", http.FileServer(http.Dir("./static/styles/"))))
 	s.PathPrefix("/static/dist/").Handler(http.StripPrefix("/static/dist/", http.FileServer(http.Dir("./static/dist/"))))
+	s.PathPrefix("/static/images/").Handler(http.StripPrefix("/static/images/", http.FileServer(http.Dir("./static/images/"))))
 
 	return s
 }
