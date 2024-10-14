@@ -25,9 +25,13 @@ func (g *Game) initialPosition() {
 
 func (g *Game) Move(fromX, fromY, toX, toY int) error {
 	piece := g.Board[fromX][fromY]
+	if piece == nil {
+		return fmt.Errorf("no piece at %d %d", fromX, fromY)
+	}
 	if piece.Color() != g.ActiveColor {
 		return fmt.Errorf("wrong color")
 	}
+
 	err := piece.Move(fromX, fromY, toX, toY, g)
 	if err != nil {
 		return err

@@ -15,7 +15,7 @@ const (
 )
 
 type Piece interface {
-	Move(fromX, fromY, toX, toY int, g *Game) error
+	Move(fromRow, fromCol, toRow, toCol int, g *Game) error
 	Type() string
 	Color() Color
 	Symbol() string

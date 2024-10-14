@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	game "web-chess/src"
@@ -12,11 +13,10 @@ type GameHandler struct {
 }
 
 type MoveRequest struct {
-	FromX int        `json:"fromX"`
-	FromY int        `json:"fromY"`
-	ToX   int        `json:"toX"`
-	ToY   int        `json:"toY"`
-	Color game.Color `json:"color"`
+	FromX int `json:"fromX"`
+	FromY int `json:"fromY"`
+	ToX   int `json:"toX"`
+	ToY   int `json:"toY"`
 }
 
 func (h *GameHandler) NewGame(w http.ResponseWriter, req *http.Request) {
@@ -30,12 +30,14 @@ func (h *GameHandler) Move(w http.ResponseWriter, req *http.Request) {
 
 	err := json.NewDecoder(req.Body).Decode(&move)
 	if err != nil {
+		fmt.Printf("Error decoding move: %v\n", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	err = h.game.Move(move.FromX, move.FromY, move.ToX, move.ToY)
 	if err != nil {
+		fmt.Printf("Error moving piece: %v\n", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

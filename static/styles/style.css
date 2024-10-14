@@ -32,6 +32,14 @@
   background-color: #753f00;
 }
 
+.selected-chess-square {
+  background-color: #b9a429;
+}
+
+.chess-square:hover {
+  background-color: #b9a429;
+}
+
 .chess-piece {
   font-size: 40px;
 }
