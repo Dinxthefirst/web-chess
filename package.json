@@ -1,0 +1,7 @@
+{
+    "scripts": {
+      "build": "tsc",
+      "start": "tsc && go run main.go"
+    }
+  }
+  
