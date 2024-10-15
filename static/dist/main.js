@@ -72,6 +72,7 @@ function createBoardDiv(gameState) {
             const index = rank * boardsize + file;
             const piece = gameState.board[index];
             const squareDiv = createSquareDiv(piece, index);
+            squareDiv.dataset.index = index.toString();
             if ((rank + file) % 2 === 0) {
                 squareDiv.classList.add("light-chess-square");
             }
@@ -87,6 +88,7 @@ function createBoardDiv(gameState) {
 function createSquareDiv(piece, index) {
     const squareDiv = document.createElement("div");
     squareDiv.classList.add("chess-square");
+    squareDiv.textContent = index.toString();
     squareDiv.addEventListener("click", () => {
         handleSquareClick(index);
     });
@@ -109,17 +111,47 @@ function createPieceDiv(piece) {
 }
 let selectedSquares = [];
 function handleSquareClick(index) {
-    if (!selectedSquares[0]) {
+    if (selectedSquares.length === 0) {
         selectedSquares[0] = index;
+        getLegalMoves(index);
+        return;
     }
-    else {
-        selectedSquares[1] = index;
-        const move = {
-            from: selectedSquares[0],
-            to: selectedSquares[1],
-        };
-        sendMoveRequest(move);
+    if (selectedSquares[0] === index) {
         selectedSquares = [];
+        removeHighlight();
+        return;
+    }
+    selectedSquares[1] = index;
+    const move = {
+        startSquare: selectedSquares[0],
+        targetSquare: selectedSquares[1],
+    };
+    sendMoveRequest(move);
+    selectedSquares = [];
+    removeHighlight();
+}
+function highlightLegalMoves(moves) {
+    removeHighlight();
+    for (let i = 0; i < moves.length; i++) {
+        highlightSquare(moves[i].targetSquare);
+    }
+}
+function highlightSquare(index) {
+    const square = document.querySelector(`[data-index='${index}']`);
+    square.classList.add("highlighted-square");
+    const circle = document.createElement("div");
+    circle.classList.add("highlight-circle");
+    square.appendChild(circle);
+}
+function removeHighlight() {
+    const squares = document.getElementsByClassName("chess-square");
+    for (let i = 0; i < squares.length; i++) {
+        const square = squares[i];
+        square.classList.remove("highlighted-square");
+        const existingCircle = square.querySelector(".highlight-circle");
+        if (existingCircle) {
+            existingCircle.remove();
+        }
     }
 }
 //// ASYNC FUNCTIONS
@@ -176,6 +208,27 @@ function currentGameState() {
         const response = yield fetch("/current-state", { method: "GET" });
         if (!response.ok) {
             throw new Error("Could not fetch game state");
+        }
+        return response.json();
+    });
+}
+function getLegalMoves(index) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const moves = yield fetchLegalMoves(index);
+            console.log("Legal moves:", moves);
+            highlightLegalMoves(moves);
+        }
+        catch (error) {
+            console.error("There was a problem with fetching legal moves:", error);
+        }
+    });
+}
+function fetchLegalMoves(index) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const response = yield fetch(`/legal-moves/${index}`, { method: "GET" });
+        if (!response.ok) {
+            throw new Error("Could not fetch legal moves");
         }
         return response.json();
     });

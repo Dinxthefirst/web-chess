@@ -8,10 +8,11 @@ import (
 const initialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
 func NewGame() *Game {
+	precomputedMoveData()
 	g := &Game{}
 	g.Board = [BoardSize * BoardSize]Piece{}
 	g.LoadPositionFromFen(initialFen)
-	g.ActiveColor = White
+	g.ColorToMove = White
 	return g
 }
 
@@ -53,11 +54,11 @@ func (g *Game) LoadPositionFromFen(fen string) {
 }
 
 func (g *Game) Move(move Move) error {
-	piece := g.Board[move.FromRow*BoardSize+move.FromCol]
+	piece := g.Board[move.StartSquare]
 	if piece.pieceType() == None {
-		return fmt.Errorf("no piece at %d %d", move.FromRow, move.FromCol)
+		return fmt.Errorf("no piece at %d", move.StartSquare)
 	}
-	if piece.color() != g.ActiveColor {
+	if piece.color() != g.ColorToMove {
 		return fmt.Errorf("wrong color")
 	}
 
@@ -66,7 +67,7 @@ func (g *Game) Move(move Move) error {
 		return err
 	}
 
-	g.ActiveColor = 1 - g.ActiveColor
+	g.ColorToMove = 1 - g.ColorToMove
 	return nil
 }
 
@@ -89,4 +90,16 @@ func (g *Game) movePiece(move Move, p Piece) error {
 	// 	return fmt.Errorf("no piece")
 	// }
 	// return fmt.Errorf("invalid piece type")
+}
+
+func (g *Game) LegalMoves(index int) []Move {
+	moves := g.generateMoves()
+
+	filteredMoves := []Move{}
+	for _, m := range moves {
+		if m.StartSquare == index {
+			filteredMoves = append(filteredMoves, m)
+		}
+	}
+	return filteredMoves
 }

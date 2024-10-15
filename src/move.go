@@ -1,65 +1,71 @@
 package game
 
-// func checkLine(fromRow, fromCol, toRow, toCol int, g *Game) bool {
-// 	rowDir := getDirection(toRow - fromRow)
-// 	colDir := getDirection(toCol - fromCol)
-// 	row, col := fromRow+rowDir, fromCol+colDir
-// 	for row != toRow || col != toCol {
-// 		if g.Board[row][col] != nil {
-// 			return false
-// 		}
-// 		row += rowDir
-// 		col += colDir
-// 	}
-// 	return true
-// }
+var DirectionOffsets = [BoardSize]int{8, -8, 1, -1, 7, -7, 9, -9}
 
-// func getDirection(delta int) int {
-// 	if delta == 0 {
-// 		return 0
-// 	}
-// 	if delta > 0 {
-// 		return 1
-// 	}
-// 	return -1
-// }
+var NumSquaresToEdge [BoardSize * BoardSize][]int
 
-// func checkLinear(fromRow, fromCol, toRow, toCol int, g *Game) bool {
-// 	if fromRow == toRow || fromCol == toCol {
-// 		return checkLine(fromRow, fromCol, toRow, toCol, g)
-// 	}
-// 	return false
-// }
+func precomputedMoveData() {
+	for file := 0; file < BoardSize; file++ {
+		for rank := 0; rank < BoardSize; rank++ {
+			numNorth := (BoardSize - 1) - rank
+			numSouth := rank
+			numEast := (BoardSize - 1) - file
+			numWest := file
 
-// func checkDiagonal(fromRow, fromCol, toRow, toCol int, g *Game) bool {
-// 	if abs(fromRow-toRow) == abs(fromCol-toCol) {
-// 		return checkLine(fromRow, fromCol, toRow, toCol, g)
-// 	}
-// 	return false
-// }
+			squareIndex := rank*BoardSize + file
+			NumSquaresToEdge[squareIndex] = []int{
+				numNorth,
+				numSouth,
+				numEast,
+				numWest,
+				min(numNorth, numWest),
+				min(numSouth, numEast),
+				min(numNorth, numEast),
+				min(numSouth, numWest),
+			}
+		}
+	}
+}
 
-// func abs(x int) int {
-// 	if x < 0 {
-// 		return -x
-// 	}
-// 	return x
-// }
+func (g *Game) generateMoves() []Move {
+	moves := []Move{}
 
-// func checkKing(fromRow, fromCol, toRow, toCol int, g *Game) bool {
-// 	if abs(fromRow-toRow) <= 1 && abs(fromCol-toCol) <= 1 {
-// 		if g.Board[toRow][toCol] == nil || g.Board[toRow][toCol].Color() != g.ActiveColor {
-// 			return true
-// 		}
-// 	}
-// 	return false
-// }
+	for startSquare := 0; startSquare < BoardSize*BoardSize; startSquare++ {
+		piece := g.Board[startSquare]
+		if piece.pieceType() == None {
+			continue
+		}
+		if piece.color() != g.ColorToMove {
+			continue
+		}
 
-// func checkKnight(fromRow, fromCol, toRow, toCol int, g *Game) bool {
-// 	if !(abs(fromRow-toRow) == 1 && abs(fromCol-toCol) == 2) || (abs(fromRow-toRow) == 2 && abs(fromCol-toCol) == 1) {
-// 		return false
-// 	}
-// 	if g.Board[toRow][toCol] != nil {
-// 		return false
-// 	}
-// 	return true
-// }
+		if piece.pieceType() == Rook || piece.pieceType() == Bishop || piece.pieceType() == Queen {
+			slidingMoves := g.generateSlidingMoves(startSquare)
+			moves = append(moves, slidingMoves...)
+		}
+	}
+	return moves
+}
+
+func (g *Game) generateSlidingMoves(startSquare int) []Move {
+	moves := []Move{}
+	piece := g.Board[startSquare]
+	for directionIndex := 0; directionIndex < 8; directionIndex++ {
+		for numSquares := 0; numSquares < NumSquaresToEdge[startSquare][directionIndex]; numSquares++ {
+			targetSquare := startSquare + DirectionOffsets[directionIndex]*(numSquares+1)
+
+			pieceOnTargetSquare := g.Board[targetSquare]
+
+			if pieceOnTargetSquare.color() == piece.color() {
+				break
+			}
+
+			moves = append(moves, Move{startSquare, targetSquare})
+
+			if pieceOnTargetSquare.color() != None {
+				break
+			}
+		}
+	}
+	return moves
+}

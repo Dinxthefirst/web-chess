@@ -31,6 +31,7 @@ func (s *Server) routes() {
 	s.HandleFunc("/new-game", gameHandler.NewGame)
 	s.HandleFunc("/move", gameHandler.Move)
 	s.HandleFunc("/current-state", gameHandler.CurrentState)
+	s.HandleFunc("/legal-moves/{index}", gameHandler.LegalMoves)
 
 	s.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "404 page not found", http.StatusNotFound)

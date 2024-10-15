@@ -18,14 +18,12 @@ const (
 
 type Game struct {
 	Board       [BoardSize * BoardSize]Piece `json:"board"`
-	ActiveColor Color                        `json:"activeColor"`
+	ColorToMove Color                        `json:"activeColor"`
 }
 
 type Move struct {
-	FromRow int `json:"fromRow"`
-	FromCol int `json:"fromCol"`
-	ToRow   int `json:"toRow"`
-	ToCol   int `json:"toCol"`
+	StartSquare  int `json:"startSquare"`
+	TargetSquare int `json:"targetSquare"`
 }
 
 type Piece struct {

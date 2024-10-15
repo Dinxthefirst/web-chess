@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	game "web-chess/src"
+
+	"github.com/gorilla/mux"
 )
 
 type GameHandler struct {
@@ -42,4 +45,19 @@ func (h *GameHandler) Move(w http.ResponseWriter, req *http.Request) {
 func (h *GameHandler) CurrentState(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(h.game)
+}
+
+func (h *GameHandler) LegalMoves(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	index := vars["index"]
+
+	i, err := strconv.Atoi(index)
+	if err != nil {
+		http.Error(w, "Invalid index", http.StatusBadRequest)
+		return
+	}
+
+	moves := h.game.LegalMoves(i)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(moves)
 }
