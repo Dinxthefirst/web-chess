@@ -79,19 +79,22 @@ function renderBoard(gameState: Game) {
 function createBoardDiv(gameState: Game): HTMLDivElement {
   const boardDiv = document.createElement("div");
 
-  for (let row = 0; row < boardsize; row++) {
+  for (let rank = 7; rank >= 0; rank--) {
     const rowDiv = document.createElement("div");
     rowDiv.classList.add("board-row");
 
-    for (let col = 0; col < boardsize; col++) {
-      const index = row * boardsize + col;
+    for (let file = 0; file < boardsize; file++) {
+      const index = rank * boardsize + file;
       const piece = gameState.board[index];
+
       const squareDiv = createSquareDiv(piece, index);
-      if ((row + col) % 2 === 0) {
+
+      if ((rank + file) % 2 === 0) {
         squareDiv.classList.add("light-chess-square");
       } else {
         squareDiv.classList.add("dark-chess-square");
       }
+
       rowDiv.appendChild(squareDiv);
     }
 
@@ -151,8 +154,6 @@ function handleSquareClick(index: number) {
 //// ASYNC FUNCTIONS
 
 async function startNewGame() {
-  console.log("STARTING NEW GAME");
-
   try {
     const gameState = await fetchNewGame();
     console.log("Fetched game state:", gameState);

@@ -1,24 +1,27 @@
 package game
 
-import "fmt"
+import (
+	"fmt"
+)
 
+// const initialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 const initialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
 func NewGame() *Game {
-	g := GameFromFen(initialFen)
+	g := &Game{}
+	g.Board = [BoardSize * BoardSize]Piece{}
+	g.LoadPositionFromFen(initialFen)
+	g.ActiveColor = White
 	return g
 }
 
-func GameFromFen(fen string) *Game {
-	g := &Game{}
-	g.Board = [BoardSize * BoardSize]Piece{}
-	g.ActiveColor = White
-	rank := 0
+func (g *Game) LoadPositionFromFen(fen string) {
+	rank := 7
 	file := 0
 	for _, c := range fen {
 		if c == '/' {
-			rank++
 			file = 0
+			rank--
 			continue
 		}
 		if c >= '1' && c <= '8' {
@@ -47,7 +50,6 @@ func GameFromFen(fen string) *Game {
 		g.Board[rank*BoardSize+file] = Piece{pieceType | color}
 		file++
 	}
-	return g
 }
 
 func (g *Game) Move(move Move) error {
