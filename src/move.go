@@ -94,8 +94,35 @@ func (g *Game) generateSlidingMoves(startSquare int) []Move {
 }
 
 func (g *Game) generateKnightMoves(startSquare int) []Move {
-	// TODO
-	return []Move{}
+	piece := g.Board[startSquare]
+
+	moves := []Move{}
+	rank := startSquare / BoardSize
+	file := startSquare % BoardSize
+	for _, offset := range KnightOffsets {
+		targetSquare := startSquare + offset
+
+		targetRank := targetSquare / BoardSize
+		targetFile := targetSquare % BoardSize
+
+		if targetRank < 0 || targetRank >= BoardSize || targetFile < 0 || targetFile >= BoardSize {
+			continue
+		}
+
+		if abs(rank-targetRank) > 2 || abs(file-targetFile) > 2 {
+			continue
+		}
+
+		pieceOnTargetSquare := g.Board[targetSquare]
+
+		if pieceOnTargetSquare.color() == piece.color() {
+			continue
+		}
+
+		moves = append(moves, Move{startSquare, targetSquare})
+
+	}
+	return moves
 }
 
 func (g *Game) generateKingMoves(startSquare int) []Move {
@@ -132,7 +159,8 @@ func (g *Game) generatePawnMoves(startSquare int) []Move {
 	targetSquare := startSquare + 8*direction
 	if g.Board[targetSquare].pieceType() == None {
 		moves = append(moves, Move{startSquare, targetSquare})
-		if (startSquare/BoardSize == 1 && piece.color() == White) || (startSquare/BoardSize == 6 && piece.color() == Black) {
+		onFirstRank := startSquare/BoardSize == 1 && piece.color() == White || startSquare/BoardSize == 6 && piece.color() == Black
+		if onFirstRank {
 			targetSquare = startSquare + 16*direction
 			if g.Board[targetSquare].pieceType() == None {
 				moves = append(moves, Move{startSquare, targetSquare})

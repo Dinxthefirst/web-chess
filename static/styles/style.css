@@ -39,10 +39,6 @@
   background-color: #aaa23a;
 }
 
-.highlighted-chess-square {
-  background-color: #34a04b !important;
-}
-
 .highlight-circle {
   display: flex;
   justify-content: center;
