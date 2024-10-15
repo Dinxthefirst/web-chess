@@ -8,6 +8,45 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var PieceType;
+(function (PieceType) {
+    PieceType[PieceType["None"] = 0] = "None";
+    PieceType[PieceType["King"] = 1] = "King";
+    PieceType[PieceType["Pawn"] = 2] = "Pawn";
+    PieceType[PieceType["Knight"] = 3] = "Knight";
+    PieceType[PieceType["Bishop"] = 4] = "Bishop";
+    PieceType[PieceType["Rook"] = 5] = "Rook";
+    PieceType[PieceType["Queen"] = 6] = "Queen";
+    PieceType[PieceType["White"] = 8] = "White";
+    PieceType[PieceType["Black"] = 16] = "Black";
+})(PieceType || (PieceType = {}));
+const PieceImages = {
+    [PieceType.Pawn]: {
+        [PieceType.White]: "/static/images/white_pawn.svg",
+        [PieceType.Black]: "/static/images/black_pawn.svg",
+    },
+    [PieceType.Rook]: {
+        [PieceType.White]: "/static/images/white_rook.svg",
+        [PieceType.Black]: "/static/images/black_rook.svg",
+    },
+    [PieceType.Knight]: {
+        [PieceType.White]: "/static/images/white_knight.svg",
+        [PieceType.Black]: "/static/images/black_knight.svg",
+    },
+    [PieceType.Bishop]: {
+        [PieceType.White]: "/static/images/white_bishop.svg",
+        [PieceType.Black]: "/static/images/black_bishop.svg",
+    },
+    [PieceType.Queen]: {
+        [PieceType.White]: "/static/images/white_queen.svg",
+        [PieceType.Black]: "/static/images/black_queen.svg",
+    },
+    [PieceType.King]: {
+        [PieceType.White]: "/static/images/white_king.svg",
+        [PieceType.Black]: "/static/images/black_king.svg",
+    },
+};
+///// EVERYHING ELSE
 document.addEventListener("DOMContentLoaded", () => {
     setupNewGameButton();
 });
@@ -81,12 +120,14 @@ function createSquareDiv(piece, rowIndex, pieceIndex) {
 function createPieceDiv(piece) {
     const pieceDiv = document.createElement("div");
     pieceDiv.classList.add("chess-piece");
-    if (piece) {
-        const pieceImg = document.createElement("img");
-        pieceImg.src = piece.symbol;
-        pieceImg.alt = piece.type;
-        pieceDiv.appendChild(pieceImg);
+    const pieceType = piece.type & 7;
+    if (piece.type === PieceType.None) {
+        return pieceDiv;
     }
+    const pieceColor = piece.type & 24;
+    const pieceImg = document.createElement("img");
+    pieceImg.src = PieceImages[pieceType][pieceColor];
+    pieceDiv.appendChild(pieceImg);
     return pieceDiv;
 }
 let selectedSquares = {};
@@ -96,29 +137,26 @@ function handleSquareClick(square) {
     }
     else {
         selectedSquares.to = square;
-        sendMoveRequest();
+        const move = {
+            fromRow: selectedSquares.from.row,
+            fromCol: selectedSquares.from.col,
+            toRow: selectedSquares.to.row,
+            toCol: selectedSquares.to.col,
+        };
+        sendMoveRequest(move);
+        selectedSquares = {};
     }
 }
-function sendMoveRequest() {
+//// ASYNC FUNCTIONS
+function sendMoveRequest(move) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (selectedSquares.from && selectedSquares.to) {
-            const moveRequest = {
-                fromX: selectedSquares.from.row,
-                fromY: selectedSquares.from.col,
-                toX: selectedSquares.to.row,
-                toY: selectedSquares.to.col,
-            };
-            try {
-                yield makeMove(moveRequest);
-                const gameState = yield currentGameState();
-                renderBoard(gameState);
-            }
-            catch (error) {
-                console.error(error);
-            }
-            finally {
-                selectedSquares = {};
-            }
+        try {
+            yield makeMove(move);
+            const gameState = yield currentGameState();
+            renderBoard(gameState);
+        }
+        catch (error) {
+            console.error(error);
         }
     });
 }
