@@ -2,43 +2,56 @@ package game
 
 import "fmt"
 
+const initialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+
 func NewGame() *Game {
-	g := &Game{
-		ActiveColor: White,
-	}
-	g.initialPosition()
+	g := GameFromFen(initialFen)
 	return g
 }
 
-func (g *Game) initialPosition() {
-	for i := 0; i < BoardSize; i++ {
-		g.Board[6][i] = Piece{Type: Pawn | White}
-		g.Board[1][i] = Piece{Type: Pawn | Black}
+func GameFromFen(fen string) *Game {
+	g := &Game{}
+	g.Board = [BoardSize * BoardSize]Piece{}
+	g.ActiveColor = White
+	rank := 0
+	file := 0
+	for _, c := range fen {
+		if c == '/' {
+			rank++
+			file = 0
+			continue
+		}
+		if c >= '1' && c <= '8' {
+			file += int(c - '0')
+			continue
+		}
+		color := White
+		if c >= 'a' && c <= 'z' {
+			color = Black
+		}
+		pieceType := None
+		switch c {
+		case 'p', 'P':
+			pieceType = Pawn
+		case 'n', 'N':
+			pieceType = Knight
+		case 'b', 'B':
+			pieceType = Bishop
+		case 'r', 'R':
+			pieceType = Rook
+		case 'q', 'Q':
+			pieceType = Queen
+		case 'k', 'K':
+			pieceType = King
+		}
+		g.Board[rank*BoardSize+file] = Piece{pieceType | color}
+		file++
 	}
-	// g.Board[7][0] = &Rook{color: White}
-	// g.Board[7][7] = &Rook{color: White}
-	// g.Board[0][0] = &Rook{color: Black}
-	// g.Board[0][7] = &Rook{color: Black}
-
-	// g.Board[7][1] = &Knight{color: White}
-	// g.Board[7][6] = &Knight{color: White}
-	// g.Board[0][1] = &Knight{color: Black}
-	// g.Board[0][6] = &Knight{color: Black}
-
-	// g.Board[7][2] = &Bishop{color: White}
-	// g.Board[7][5] = &Bishop{color: White}
-	// g.Board[0][2] = &Bishop{color: Black}
-	// g.Board[0][5] = &Bishop{color: Black}
-
-	// g.Board[7][3] = &Queen{color: White}
-	// g.Board[0][3] = &Queen{color: Black}
-
-	// g.Board[7][4] = &King{color: White}
-	// g.Board[0][4] = &King{color: Black}
+	return g
 }
 
 func (g *Game) Move(move Move) error {
-	piece := g.Board[move.FromRow][move.FromCol]
+	piece := g.Board[move.FromRow*BoardSize+move.FromCol]
 	if piece.pieceType() == None {
 		return fmt.Errorf("no piece at %d %d", move.FromRow, move.FromCol)
 	}

@@ -8,6 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+// import * as Types from "./types";
+// TYPES
+const boardsize = 8;
 var PieceType;
 (function (PieceType) {
     PieceType[PieceType["None"] = 0] = "None";
@@ -54,6 +57,72 @@ function setupNewGameButton() {
     const newGameButton = document.getElementById("new-game-button");
     newGameButton.addEventListener("click", startNewGame);
 }
+const gameContainer = document.getElementById("game-container");
+function renderBoard(gameState) {
+    gameContainer.innerHTML = "";
+    const boardDiv = createBoardDiv(gameState);
+    gameContainer.appendChild(boardDiv);
+}
+function createBoardDiv(gameState) {
+    const boardDiv = document.createElement("div");
+    for (let row = 0; row < boardsize; row++) {
+        const rowDiv = document.createElement("div");
+        rowDiv.classList.add("board-row");
+        for (let col = 0; col < boardsize; col++) {
+            const index = row * boardsize + col;
+            const piece = gameState.board[index];
+            const squareDiv = createSquareDiv(piece, index);
+            if ((row + col) % 2 === 0) {
+                squareDiv.classList.add("light-chess-square");
+            }
+            else {
+                squareDiv.classList.add("dark-chess-square");
+            }
+            rowDiv.appendChild(squareDiv);
+        }
+        boardDiv.appendChild(rowDiv);
+    }
+    return boardDiv;
+}
+function createSquareDiv(piece, index) {
+    const squareDiv = document.createElement("div");
+    squareDiv.classList.add("chess-square");
+    squareDiv.addEventListener("click", () => {
+        handleSquareClick(index);
+    });
+    const pieceDiv = createPieceDiv(piece);
+    squareDiv.appendChild(pieceDiv);
+    return squareDiv;
+}
+function createPieceDiv(piece) {
+    const pieceDiv = document.createElement("div");
+    pieceDiv.classList.add("chess-piece");
+    const pieceType = piece.type & 7;
+    if (piece.type === PieceType.None) {
+        return pieceDiv;
+    }
+    const pieceColor = piece.type & 24;
+    const pieceImg = document.createElement("img");
+    pieceImg.src = PieceImages[pieceType][pieceColor];
+    pieceDiv.appendChild(pieceImg);
+    return pieceDiv;
+}
+let selectedSquares = [];
+function handleSquareClick(index) {
+    if (!selectedSquares[0]) {
+        selectedSquares[0] = index;
+    }
+    else {
+        selectedSquares[1] = index;
+        const move = {
+            from: selectedSquares[0],
+            to: selectedSquares[1],
+        };
+        sendMoveRequest(move);
+        selectedSquares = [];
+    }
+}
+//// ASYNC FUNCTIONS
 function startNewGame() {
     return __awaiter(this, void 0, void 0, function* () {
         console.log("STARTING NEW GAME");
@@ -76,78 +145,6 @@ function fetchNewGame() {
         return response.json();
     });
 }
-const gameContainer = document.getElementById("game-container");
-function renderBoard(gameState) {
-    gameContainer.innerHTML = "";
-    const boardDiv = createBoardDiv(gameState);
-    gameContainer.appendChild(boardDiv);
-}
-function createBoardDiv(gameState) {
-    const boardDiv = document.createElement("div");
-    gameState.board.forEach((row, rowIndex) => {
-        const rowDiv = createRowDiv(row, rowIndex);
-        boardDiv.appendChild(rowDiv);
-    });
-    return boardDiv;
-}
-function createRowDiv(row, rowIndex) {
-    const rowDiv = document.createElement("div");
-    rowDiv.classList.add("board-row");
-    row.forEach((piece, pieceIndex) => {
-        const squareDiv = createSquareDiv(piece, rowIndex, pieceIndex);
-        rowDiv.appendChild(squareDiv);
-    });
-    return rowDiv;
-}
-function createSquareDiv(piece, rowIndex, pieceIndex) {
-    const squareDiv = document.createElement("div");
-    squareDiv.classList.add("chess-square");
-    if ((rowIndex + pieceIndex) % 2 === 0) {
-        squareDiv.classList.add("dark-chess-square");
-    }
-    else {
-        squareDiv.classList.add("light-chess-square");
-    }
-    squareDiv.addEventListener("click", () => {
-        console.log("Square clicked:", { row: rowIndex, col: pieceIndex });
-        squareDiv.classList.add("selected-square");
-        handleSquareClick({ row: rowIndex, col: pieceIndex });
-    });
-    const pieceDiv = createPieceDiv(piece);
-    squareDiv.appendChild(pieceDiv);
-    return squareDiv;
-}
-function createPieceDiv(piece) {
-    const pieceDiv = document.createElement("div");
-    pieceDiv.classList.add("chess-piece");
-    const pieceType = piece.type & 7;
-    if (piece.type === PieceType.None) {
-        return pieceDiv;
-    }
-    const pieceColor = piece.type & 24;
-    const pieceImg = document.createElement("img");
-    pieceImg.src = PieceImages[pieceType][pieceColor];
-    pieceDiv.appendChild(pieceImg);
-    return pieceDiv;
-}
-let selectedSquares = {};
-function handleSquareClick(square) {
-    if (!selectedSquares.from) {
-        selectedSquares.from = square;
-    }
-    else {
-        selectedSquares.to = square;
-        const move = {
-            fromRow: selectedSquares.from.row,
-            fromCol: selectedSquares.from.col,
-            toRow: selectedSquares.to.row,
-            toCol: selectedSquares.to.col,
-        };
-        sendMoveRequest(move);
-        selectedSquares = {};
-    }
-}
-//// ASYNC FUNCTIONS
 function sendMoveRequest(move) {
     return __awaiter(this, void 0, void 0, function* () {
         try {

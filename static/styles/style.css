@@ -24,19 +24,19 @@
 }
 
 .light-chess-square {
-  background-color: #c0a78a;
+  background-color: #f0d9b5;
 }
 
 .dark-chess-square {
-  background-color: #753f00;
+  background-color: #b58863;
 }
 
-.selected-chess-square {
-  background-color: #b9a429;
+.light-chess-square:hover {
+  background-color: #cdd26a;
 }
 
-.chess-square:hover {
-  background-color: #b9a429;
+.dark-chess-square:hover {
+  background-color: #aaa23a;
 }
 
 .chess-piece img {

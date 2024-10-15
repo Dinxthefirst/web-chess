@@ -1,5 +1,7 @@
 // import * as Types from "./types";
 // TYPES
+const boardsize = 8;
+
 type Color = number;
 
 enum PieceType {
@@ -19,21 +21,14 @@ interface Piece {
 }
 
 interface Game {
-  board: Piece[][];
+  board: Piece[];
   activeColor: Color;
 }
 
 interface Move {
-  fromRow: number;
-  fromCol: number;
-  toRow: number;
-  toCol: number;
+  from: number;
+  to: number;
 }
-
-type Square = {
-  row: number;
-  col: number;
-};
 
 const PieceImages: { [key in PieceType]?: { [key in Color]: string } } = {
   [PieceType.Pawn]: {
@@ -73,28 +68,6 @@ function setupNewGameButton() {
   newGameButton.addEventListener("click", startNewGame);
 }
 
-async function startNewGame() {
-  console.log("STARTING NEW GAME");
-
-  try {
-    const gameState = await fetchNewGame();
-    console.log("Fetched game state:", gameState);
-    renderBoard(gameState);
-  } catch (error) {
-    console.error("There was a problem with fetching a new game:", error);
-  }
-}
-
-async function fetchNewGame(): Promise<Game> {
-  const response = await fetch("new-game", { method: "POST" });
-
-  if (!response.ok) {
-    throw new Error("Could not fetch new chess game");
-  }
-
-  return response.json() as Promise<Game>;
-}
-
 const gameContainer = document.getElementById("game-container")!;
 
 function renderBoard(gameState: Game) {
@@ -106,44 +79,34 @@ function renderBoard(gameState: Game) {
 function createBoardDiv(gameState: Game): HTMLDivElement {
   const boardDiv = document.createElement("div");
 
-  gameState.board.forEach((row, rowIndex) => {
-    const rowDiv = createRowDiv(row, rowIndex);
+  for (let row = 0; row < boardsize; row++) {
+    const rowDiv = document.createElement("div");
+    rowDiv.classList.add("board-row");
+
+    for (let col = 0; col < boardsize; col++) {
+      const index = row * boardsize + col;
+      const piece = gameState.board[index];
+      const squareDiv = createSquareDiv(piece, index);
+      if ((row + col) % 2 === 0) {
+        squareDiv.classList.add("light-chess-square");
+      } else {
+        squareDiv.classList.add("dark-chess-square");
+      }
+      rowDiv.appendChild(squareDiv);
+    }
+
     boardDiv.appendChild(rowDiv);
-  });
+  }
 
   return boardDiv;
 }
 
-function createRowDiv(row: Piece[], rowIndex: number): HTMLDivElement {
-  const rowDiv = document.createElement("div");
-  rowDiv.classList.add("board-row");
-
-  row.forEach((piece, pieceIndex) => {
-    const squareDiv = createSquareDiv(piece, rowIndex, pieceIndex);
-    rowDiv.appendChild(squareDiv);
-  });
-
-  return rowDiv;
-}
-
-function createSquareDiv(
-  piece: Piece,
-  rowIndex: number,
-  pieceIndex: number
-): HTMLDivElement {
+function createSquareDiv(piece: Piece, index: number): HTMLDivElement {
   const squareDiv = document.createElement("div");
   squareDiv.classList.add("chess-square");
 
-  if ((rowIndex + pieceIndex) % 2 === 0) {
-    squareDiv.classList.add("dark-chess-square");
-  } else {
-    squareDiv.classList.add("light-chess-square");
-  }
-
   squareDiv.addEventListener("click", () => {
-    console.log("Square clicked:", { row: rowIndex, col: pieceIndex });
-    squareDiv.classList.add("selected-square");
-    handleSquareClick({ row: rowIndex, col: pieceIndex });
+    handleSquareClick(index);
   });
 
   const pieceDiv = createPieceDiv(piece);
@@ -169,25 +132,45 @@ function createPieceDiv(piece: Piece): HTMLDivElement {
   return pieceDiv;
 }
 
-let selectedSquares: { from?: Square; to?: Square } = {};
+let selectedSquares: number[] = [];
 
-function handleSquareClick(square: Square) {
-  if (!selectedSquares.from) {
-    selectedSquares.from = square;
+function handleSquareClick(index: number) {
+  if (!selectedSquares[0]) {
+    selectedSquares[0] = index;
   } else {
-    selectedSquares.to = square;
+    selectedSquares[1] = index;
     const move: Move = {
-      fromRow: selectedSquares.from.row,
-      fromCol: selectedSquares.from.col,
-      toRow: selectedSquares.to.row,
-      toCol: selectedSquares.to.col,
+      from: selectedSquares[0],
+      to: selectedSquares[1],
     };
     sendMoveRequest(move);
-    selectedSquares = {};
+    selectedSquares = [];
   }
 }
 
 //// ASYNC FUNCTIONS
+
+async function startNewGame() {
+  console.log("STARTING NEW GAME");
+
+  try {
+    const gameState = await fetchNewGame();
+    console.log("Fetched game state:", gameState);
+    renderBoard(gameState);
+  } catch (error) {
+    console.error("There was a problem with fetching a new game:", error);
+  }
+}
+
+async function fetchNewGame(): Promise<Game> {
+  const response = await fetch("new-game", { method: "POST" });
+
+  if (!response.ok) {
+    throw new Error("Could not fetch new chess game");
+  }
+
+  return response.json() as Promise<Game>;
+}
 
 async function sendMoveRequest(move: Move) {
   try {

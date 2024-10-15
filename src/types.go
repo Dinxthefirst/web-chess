@@ -17,8 +17,8 @@ const (
 )
 
 type Game struct {
-	Board       [BoardSize][BoardSize]Piece `json:"board"`
-	ActiveColor Color                       `json:"activeColor"`
+	Board       [BoardSize * BoardSize]Piece `json:"board"`
+	ActiveColor Color                        `json:"activeColor"`
 }
 
 type Move struct {
