@@ -61,35 +61,35 @@ func (g *Game) Move(move Move) error {
 	if piece.color() != g.ColorToMove {
 		return fmt.Errorf("wrong color")
 	}
-
 	err := g.movePiece(move, piece)
 	if err != nil {
 		return err
 	}
 
-	g.ColorToMove = 1 - g.ColorToMove
+	if g.ColorToMove == White {
+		g.ColorToMove = Black
+	} else {
+		g.ColorToMove = White
+	}
 	return nil
 }
 
 func (g *Game) movePiece(move Move, p Piece) error {
-	return fmt.Errorf("not implemented")
-	// switch p.Type & 7 {
-	// case Pawn:
-	// 	return g.movePawn(move)
-	// case Knight:
-	// 	return g.moveKnight(move)
-	// case Bishop:
-	// 	return g.moveBishop(move)
-	// case Rook:
-	// 	return g.moveRook(move)
-	// case Queen:
-	// 	return g.moveQueen(move)
-	// case King:
-	// 	return g.moveKing(move)
-	// case None:
-	// 	return fmt.Errorf("no piece")
-	// }
-	// return fmt.Errorf("invalid piece type")
+	moves := g.LegalMoves(move.StartSquare)
+	validMove := false
+	for _, m := range moves {
+		if m.TargetSquare == move.TargetSquare {
+			validMove = true
+			break
+		}
+	}
+	if !validMove {
+		return fmt.Errorf("invalid move")
+	}
+
+	g.Board[move.TargetSquare] = p
+	g.Board[move.StartSquare] = Piece{None}
+	return nil
 }
 
 func (g *Game) LegalMoves(index int) []Move {

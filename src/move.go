@@ -1,6 +1,7 @@
 package game
 
 var DirectionOffsets = [BoardSize]int{8, -8, 1, -1, 7, -7, 9, -9}
+var KnightOffsets = [8]int{15, 17, 10, 6, -15, -17, -10, -6}
 
 var NumSquaresToEdge [BoardSize * BoardSize][]int
 
@@ -43,14 +44,36 @@ func (g *Game) generateMoves() []Move {
 			slidingMoves := g.generateSlidingMoves(startSquare)
 			moves = append(moves, slidingMoves...)
 		}
+		if piece.pieceType() == Knight {
+			knightMoves := g.generateKnightMoves(startSquare)
+			moves = append(moves, knightMoves...)
+		}
+		if piece.pieceType() == King {
+			kingMoves := g.generateKingMoves(startSquare)
+			moves = append(moves, kingMoves...)
+		}
+		if piece.pieceType() == Pawn {
+			pawnMoves := g.generatePawnMoves(startSquare)
+			moves = append(moves, pawnMoves...)
+		}
 	}
 	return moves
 }
 
 func (g *Game) generateSlidingMoves(startSquare int) []Move {
-	moves := []Move{}
 	piece := g.Board[startSquare]
-	for directionIndex := 0; directionIndex < 8; directionIndex++ {
+
+	startDirIndex := 0
+	if piece.pieceType() == Bishop {
+		startDirIndex = 4
+	}
+	endDirIndex := 8
+	if piece.pieceType() == Rook {
+		endDirIndex = 4
+	}
+
+	moves := []Move{}
+	for directionIndex := startDirIndex; directionIndex < endDirIndex; directionIndex++ {
 		for numSquares := 0; numSquares < NumSquaresToEdge[startSquare][directionIndex]; numSquares++ {
 			targetSquare := startSquare + DirectionOffsets[directionIndex]*(numSquares+1)
 
@@ -67,5 +90,62 @@ func (g *Game) generateSlidingMoves(startSquare int) []Move {
 			}
 		}
 	}
+	return moves
+}
+
+func (g *Game) generateKnightMoves(startSquare int) []Move {
+	// TODO
+	return []Move{}
+}
+
+func (g *Game) generateKingMoves(startSquare int) []Move {
+	piece := g.Board[startSquare]
+
+	moves := []Move{}
+	for _, offset := range DirectionOffsets {
+		targetSquare := startSquare + offset
+
+		if targetSquare < 0 || targetSquare >= BoardSize*BoardSize {
+			continue
+		}
+
+		pieceOnTargetSquare := g.Board[targetSquare]
+
+		if pieceOnTargetSquare.color() == piece.color() {
+			continue
+		}
+
+		moves = append(moves, Move{startSquare, targetSquare})
+	}
+	return moves
+}
+
+func (g *Game) generatePawnMoves(startSquare int) []Move {
+	piece := g.Board[startSquare]
+
+	moves := []Move{}
+	direction := 1
+	if piece.color() == Black {
+		direction = -1
+	}
+
+	targetSquare := startSquare + 8*direction
+	if g.Board[targetSquare].pieceType() == None {
+		moves = append(moves, Move{startSquare, targetSquare})
+		if (startSquare/BoardSize == 1 && piece.color() == White) || (startSquare/BoardSize == 6 && piece.color() == Black) {
+			targetSquare = startSquare + 16*direction
+			if g.Board[targetSquare].pieceType() == None {
+				moves = append(moves, Move{startSquare, targetSquare})
+			}
+		}
+	}
+	for _, offset := range []int{7, 9} {
+		targetSquare = startSquare + offset*direction
+		if g.Board[targetSquare].color() != piece.color() && g.Board[targetSquare].color() != None {
+			moves = append(moves, Move{startSquare, targetSquare})
+		}
+	}
+
+	// TODO: En passant
 	return moves
 }
