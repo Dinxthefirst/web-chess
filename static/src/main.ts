@@ -22,7 +22,7 @@ interface Piece {
 
 interface Game {
   board: Piece[];
-  activeColor: Color;
+  ColorToMove: Color;
 }
 
 interface Move {

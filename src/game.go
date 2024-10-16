@@ -8,10 +8,14 @@ import (
 const initialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
 func NewGame() *Game {
+	return NewGameFromFen(initialFen)
+}
+
+func NewGameFromFen(fen string) *Game {
 	precomputedMoveData()
 	g := &Game{}
 	g.Board = [BoardSize * BoardSize]Piece{}
-	g.LoadPositionFromFen(initialFen)
+	g.LoadPositionFromFen(fen)
 	g.ColorToMove = White
 	return g
 }
