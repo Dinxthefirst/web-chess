@@ -1,29 +1,37 @@
-package main
+package test
 
 import (
 	"testing"
 	game "web-chess/src"
 )
 
+func movesEqualIgnoreFlag(m1, m2 game.Move) bool {
+	return m1.StartSquare == m2.StartSquare && m1.TargetSquare == m2.TargetSquare
+}
+
 func movesEqual(first, second []game.Move) bool {
 	if len(first) != len(second) {
 		return false
 	}
 
-	exists := make(map[game.Move]bool)
-	for _, value := range first {
-		exists[value] = true
-	}
-	for _, value := range second {
-		if !exists[value] {
+	for _, firstMove := range first {
+		found := false
+		for _, secondMove := range second {
+			if movesEqualIgnoreFlag(firstMove, secondMove) {
+				found = true
+				break
+			}
+		}
+		if !found {
 			return false
 		}
 	}
+
 	return true
 }
 
 func TestKingMoves(t *testing.T) {
-	kingFen := "4k3/8/8/8/8/8/P7/4K3"
+	kingFen := "4k3/8/8/8/8/8/P7/4K3 w - - 0 1"
 
 	g := game.NewGameFromFen(kingFen)
 
@@ -44,7 +52,7 @@ func TestKingMoves(t *testing.T) {
 }
 
 func TestRookMoves(t *testing.T) {
-	rookFen := "4k3/8/8/8/P7/8/8/R2rK3"
+	rookFen := "4k3/8/8/8/P7/8/8/R2rK3 w - - 0 1"
 
 	g := game.NewGameFromFen(rookFen)
 
@@ -65,7 +73,7 @@ func TestRookMoves(t *testing.T) {
 }
 
 func TestKnightMoves(t *testing.T) {
-	knightFen := "4k3/8/8/8/4N3/8/8/4K3"
+	knightFen := "4k3/8/8/8/4N3/8/8/4K3 w - - 0 1"
 
 	g := game.NewGameFromFen(knightFen)
 
@@ -139,7 +147,7 @@ func TestPawnMovesAfterStart(t *testing.T) {
 }
 
 func TestPawnDiagonalCapture(t *testing.T) {
-	pawnFen := "4k3/8/8/8/5p2/4P3/8/4K3"
+	pawnFen := "4k3/8/8/8/5p2/4P3/8/4K3 w - - 0 1"
 
 	g := game.NewGameFromFen(pawnFen)
 
@@ -157,7 +165,7 @@ func TestPawnDiagonalCapture(t *testing.T) {
 }
 
 func TestBishopMoves(t *testing.T) {
-	bishopFen := "4k3/8/8/8/8/8/1B7/4K3"
+	bishopFen := "4k3/8/8/8/8/8/1B7/4K3 w - - 0 1"
 
 	g := game.NewGameFromFen(bishopFen)
 
@@ -182,7 +190,7 @@ func TestBishopMoves(t *testing.T) {
 }
 
 func TestQueenMoves(t *testing.T) {
-	queenFen := "4k3/8/8/8/8/8/8/1Q2K3"
+	queenFen := "4k3/8/8/8/8/8/8/1Q2K3 w - - 0 1"
 
 	g := game.NewGameFromFen(queenFen)
 

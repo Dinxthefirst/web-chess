@@ -1,5 +1,9 @@
 package game
 
+import (
+	"strings"
+)
+
 var DirectionOffsets = [BoardSize]int{8, -8, 1, -1, 7, -7, 9, -9}
 var KnightOffsets = [8]int{15, 17, 10, 6, -15, -17, -10, -6}
 
@@ -83,7 +87,7 @@ func (g *Game) generateSlidingMoves(startSquare int) []Move {
 				break
 			}
 
-			moves = append(moves, Move{startSquare, targetSquare})
+			moves = append(moves, Move{startSquare, targetSquare, NoFlag})
 
 			if pieceOnTargetSquare.color() != None {
 				break
@@ -119,7 +123,7 @@ func (g *Game) generateKnightMoves(startSquare int) []Move {
 			continue
 		}
 
-		moves = append(moves, Move{startSquare, targetSquare})
+		moves = append(moves, Move{startSquare, targetSquare, NoFlag})
 
 	}
 	return moves
@@ -142,7 +146,7 @@ func (g *Game) generateKingMoves(startSquare int) []Move {
 			continue
 		}
 
-		moves = append(moves, Move{startSquare, targetSquare})
+		moves = append(moves, Move{startSquare, targetSquare, NoFlag})
 	}
 	return moves
 }
@@ -158,22 +162,25 @@ func (g *Game) generatePawnMoves(startSquare int) []Move {
 
 	targetSquare := startSquare + 8*direction
 	if g.Board[targetSquare].pieceType() == None {
-		moves = append(moves, Move{startSquare, targetSquare})
-		onFirstRank := startSquare/BoardSize == 1 && piece.color() == White || startSquare/BoardSize == 6 && piece.color() == Black
-		if onFirstRank {
+		moves = append(moves, Move{startSquare, targetSquare, NoFlag})
+		doubleMoveAllowed := startSquare/BoardSize == 1 && piece.color() == White || startSquare/BoardSize == 6 && piece.color() == Black
+		if doubleMoveAllowed {
 			targetSquare = startSquare + 16*direction
 			if g.Board[targetSquare].pieceType() == None {
-				moves = append(moves, Move{startSquare, targetSquare})
+				moves = append(moves, Move{startSquare, targetSquare, PawnTwoForward})
 			}
 		}
 	}
 	for _, offset := range []int{7, 9} {
+		splitFen := strings.Split(g.currentFen, " ")
+		enPassantSquare := fromChessNotation(splitFen[3])
 		targetSquare = startSquare + offset*direction
 		if g.Board[targetSquare].color() != piece.color() && g.Board[targetSquare].color() != None {
-			moves = append(moves, Move{startSquare, targetSquare})
+			moves = append(moves, Move{startSquare, targetSquare, NoFlag})
+		}
+		if enPassantSquare != -1 && targetSquare == enPassantSquare {
+			moves = append(moves, Move{startSquare, targetSquare, EnPassantCapture})
 		}
 	}
-
-	// TODO: En passant
 	return moves
 }

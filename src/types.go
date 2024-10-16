@@ -19,11 +19,28 @@ const (
 type Game struct {
 	Board       [BoardSize * BoardSize]Piece `json:"board"`
 	ColorToMove Color                        `json:"ColorToMove"`
+	currentFen  string
 }
+
+func (g *Game) GetFen() string {
+	return g.currentFen
+}
+
+const (
+	NoFlag = iota
+	EnPassantCapture
+	Castling
+	PromoteToQueen
+	PromoteToKnight
+	PromoteToRook
+	PromoteToBishop
+	PawnTwoForward
+)
 
 type Move struct {
 	StartSquare  int `json:"startSquare"`
 	TargetSquare int `json:"targetSquare"`
+	flag         int
 }
 
 type Piece struct {
