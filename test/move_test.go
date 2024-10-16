@@ -180,3 +180,55 @@ func TestBishopMoves(t *testing.T) {
 		t.Errorf("Expected %v, got %v", expectedMoves, bishopMoves)
 	}
 }
+
+func TestQueenMoves(t *testing.T) {
+	queenFen := "4k3/8/8/8/8/8/8/1Q2K3"
+
+	g := game.NewGameFromFen(queenFen)
+
+	queenMoves := g.LegalMoves(1)
+	t.Log("queen moves:", queenMoves)
+
+	expectedMoves := []game.Move{
+		{StartSquare: 1, TargetSquare: 0},
+		{StartSquare: 1, TargetSquare: 2},
+		{StartSquare: 1, TargetSquare: 3},
+		{StartSquare: 1, TargetSquare: 8},
+		{StartSquare: 1, TargetSquare: 9},
+		{StartSquare: 1, TargetSquare: 17},
+		{StartSquare: 1, TargetSquare: 25},
+		{StartSquare: 1, TargetSquare: 33},
+		{StartSquare: 1, TargetSquare: 41},
+		{StartSquare: 1, TargetSquare: 49},
+		{StartSquare: 1, TargetSquare: 57},
+		{StartSquare: 1, TargetSquare: 10},
+		{StartSquare: 1, TargetSquare: 19},
+		{StartSquare: 1, TargetSquare: 28},
+		{StartSquare: 1, TargetSquare: 37},
+		{StartSquare: 1, TargetSquare: 46},
+		{StartSquare: 1, TargetSquare: 55},
+	}
+
+	if !movesEqual(expectedMoves, queenMoves) {
+		t.Errorf("Expected %v, got %v", expectedMoves, queenMoves)
+	}
+}
+
+func TestPawnEnPassant(t *testing.T) {
+	g := game.NewGame()
+
+	g.Move(game.Move{StartSquare: 12, TargetSquare: 28}) // e4
+	g.Move(game.Move{StartSquare: 52, TargetSquare: 44}) // e6
+	g.Move(game.Move{StartSquare: 28, TargetSquare: 36}) // e5
+	g.Move(game.Move{StartSquare: 51, TargetSquare: 35}) // d5
+
+	pawnMoves := g.LegalMoves(36)
+
+	expectedMoves := []game.Move{
+		{StartSquare: 36, TargetSquare: 43},
+	}
+
+	if !movesEqual(expectedMoves, pawnMoves) {
+		t.Errorf("Expected %v, got %v", expectedMoves, pawnMoves)
+	}
+}
