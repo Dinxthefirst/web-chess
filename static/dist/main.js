@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 // import * as Types from "./types";
 // TYPES
-const boardsize = 8;
+const boardSize = 8;
 var PieceType;
 (function (PieceType) {
     PieceType[PieceType["None"] = 0] = "None";
@@ -49,7 +49,7 @@ const PieceImages = {
         [PieceType.Black]: "/static/images/black_king.svg",
     },
 };
-///// EVERYHING ELSE
+///// FUNCTIONS
 document.addEventListener("DOMContentLoaded", () => {
     setupNewGameButton();
 });
@@ -58,26 +58,40 @@ function setupNewGameButton() {
     newGameButton.addEventListener("click", startNewGame);
 }
 const gameContainer = document.getElementById("game-container");
-function renderBoard(gameState) {
+function renderBoard(game) {
     gameContainer.innerHTML = "";
-    const boardDiv = createBoardDiv(gameState);
+    gameContainer.dataset.colorToMove = game.ColorToMove.toString();
+    const boardDiv = createBoardDiv(game);
     gameContainer.appendChild(boardDiv);
 }
-function createBoardDiv(gameState) {
+function createBoardDiv(game) {
     const boardDiv = document.createElement("div");
     for (let rank = 7; rank >= 0; rank--) {
         const rowDiv = document.createElement("div");
         rowDiv.classList.add("board-row");
-        for (let file = 0; file < boardsize; file++) {
-            const index = rank * boardsize + file;
-            const piece = gameState.board[index];
+        for (let file = 0; file < boardSize; file++) {
+            const index = rank * boardSize + file;
+            const piece = game.board[index];
             const squareDiv = createSquareDiv(piece, index);
             squareDiv.dataset.index = index.toString();
+            squareDiv.dataset.type = piece.type.toString();
             if ((rank + file) % 2 === 0) {
-                squareDiv.classList.add("light-chess-square");
+                squareDiv.classList.add("dark-chess-square");
             }
             else {
-                squareDiv.classList.add("dark-chess-square");
+                squareDiv.classList.add("light-chess-square");
+            }
+            if (rank === 0) {
+                const fileLabel = document.createElement("div");
+                fileLabel.classList.add("file-label");
+                fileLabel.textContent = String.fromCharCode(97 + file);
+                squareDiv.appendChild(fileLabel);
+            }
+            if (file === 7) {
+                const rankLabel = document.createElement("div");
+                rankLabel.classList.add("rank-label");
+                rankLabel.textContent = String(rank + 1);
+                squareDiv.appendChild(rankLabel);
             }
             rowDiv.appendChild(squareDiv);
         }
@@ -88,7 +102,6 @@ function createBoardDiv(gameState) {
 function createSquareDiv(piece, index) {
     const squareDiv = document.createElement("div");
     squareDiv.classList.add("chess-square");
-    squareDiv.textContent = index.toString();
     squareDiv.addEventListener("click", () => {
         handleSquareClick(index);
     });
@@ -112,6 +125,15 @@ function createPieceDiv(piece) {
 let selectedSquares = [];
 function handleSquareClick(index) {
     if (selectedSquares.length === 0) {
+        const colorToMove = parseInt(gameContainer.dataset.colorToMove);
+        const piece = document.querySelector(`[data-index='${index}']`);
+        const pieceType = parseInt(piece.dataset.type);
+        const pieceColor = pieceType & 24;
+        console.log("Color to move:", colorToMove);
+        console.log("Piece color:", pieceColor);
+        if (pieceColor !== colorToMove) {
+            return;
+        }
         selectedSquares[0] = index;
         getLegalMoves(index);
         return;
@@ -126,31 +148,50 @@ function handleSquareClick(index) {
         startSquare: selectedSquares[0],
         targetSquare: selectedSquares[1],
     };
+    console.log("Move:", move);
     sendMoveRequest(move);
     selectedSquares = [];
     removeHighlight();
 }
 function highlightLegalMoves(moves) {
     removeHighlight();
+    if (moves.length === 0)
+        return;
+    const startSquareIndex = moves[0].startSquare;
+    const startSquare = document.querySelector(`[data-index='${startSquareIndex}']`);
+    startSquare.classList.add("highlight-square");
     for (let i = 0; i < moves.length; i++) {
+        if (i === startSquareIndex)
+            continue;
         highlightSquare(moves[i].targetSquare);
     }
 }
 function highlightSquare(index) {
     const square = document.querySelector(`[data-index='${index}']`);
-    square.classList.add("highlighted-square");
-    const circle = document.createElement("div");
-    circle.classList.add("highlight-circle");
-    square.appendChild(circle);
+    const pieceType = parseInt(square.dataset.type);
+    if (pieceType !== PieceType.None) {
+        const borderHighlight = document.createElement("div");
+        borderHighlight.classList.add("highlight-border");
+        square.appendChild(borderHighlight);
+    }
+    else {
+        const circle = document.createElement("div");
+        circle.classList.add("highlight-circle");
+        square.appendChild(circle);
+    }
 }
 function removeHighlight() {
     const squares = document.getElementsByClassName("chess-square");
     for (let i = 0; i < squares.length; i++) {
         const square = squares[i];
-        square.classList.remove("highlighted-square");
+        square.classList.remove("highlight-square");
         const existingCircle = square.querySelector(".highlight-circle");
         if (existingCircle) {
             existingCircle.remove();
+        }
+        const existingBorder = square.querySelector(".highlight-border");
+        if (existingBorder) {
+            existingBorder.remove();
         }
     }
 }
@@ -216,7 +257,6 @@ function getLegalMoves(index) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const moves = yield fetchLegalMoves(index);
-            console.log("Legal moves:", moves);
             highlightLegalMoves(moves);
         }
         catch (error) {

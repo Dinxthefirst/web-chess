@@ -1,6 +1,16 @@
+:root {
+  --chess-square-size: 50px;
+  --highlight-circle-size: 20px;
+  --light-square-color: #f0d9b5;
+  --dark-square-color: #b58863;
+  --light-square-highlight-color: #829769;
+  --dark-square-highlight-color: #84794e;
+}
+
 * {
   margin: 0;
   user-select: none;
+  font: 16px Roboto, sans-serif;
 }
 
 #game-container {
@@ -16,27 +26,55 @@
 
 .chess-square {
   display: flex;
+  position: relative;
   justify-content: center;
   align-items: center;
-  width: 50px;
-  height: 50px;
+  width: var(--chess-square-size);
+  height: var(--chess-square-size);
   cursor: pointer;
 }
 
 .light-chess-square {
-  background-color: #f0d9b5;
+  background-color: var(--light-square-color);
 }
 
 .dark-chess-square {
-  background-color: #b58863;
+  background-color: var(--dark-square-color);
 }
 
-.light-chess-square:hover {
-  background-color: #cdd26a;
+.light-chess-square.highlight-square {
+  background-color: var(--light-square-highlight-color);
 }
 
-.dark-chess-square:hover {
-  background-color: #aaa23a;
+.dark-chess-square.highlight-square {
+  background-color: var(--dark-square-highlight-color);
+}
+
+.file-label,
+.rank-label {
+  position: absolute;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.light-chess-square .file-label,
+.light-chess-square .rank-label {
+  color: var(--dark-square-color);
+}
+
+.dark-chess-square .file-label,
+.dark-chess-square .rank-label {
+  color: var(--light-square-color);
+}
+
+.rank-label {
+  top: 2px;
+  right: 2px;
+}
+
+.file-label {
+  bottom: 2px;
+  left: 2px;
 }
 
 .highlight-circle {
@@ -44,11 +82,35 @@
   justify-content: center;
   align-items: center;
   position: absolute;
-  width: 20px;
-  height: 20px;
-  background-color: green;
+  width: var(--highlight-circle-size);
+  height: var(--highlight-circle-size);
   border-radius: 50%;
   pointer-events: none;
+}
+
+.highlight-border {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  width: calc(var(--chess-square-size) - 8px);
+  height: calc(var(--chess-square-size) - 8px);
+  border: 4px solid;
+  pointer-events: none;
+}
+
+.light-chess-square .highlight-circle {
+  background-color: var(--light-square-highlight-color);
+}
+.dark-chess-square .highlight-circle {
+  background-color: var(--dark-square-highlight-color);
+}
+
+.light-chess-square .highlight-border {
+  border-color: var(--light-square-highlight-color);
+}
+.dark-chess-square .highlight-border {
+  border-color: var(--dark-square-highlight-color);
 }
 
 .chess-piece img {

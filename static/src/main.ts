@@ -1,6 +1,6 @@
 // import * as Types from "./types";
 // TYPES
-const boardsize = 8;
+const boardSize = 8;
 
 type Color = number;
 
@@ -57,7 +57,7 @@ const PieceImages: { [key in PieceType]?: { [key in Color]: string } } = {
   },
 };
 
-///// EVERYHING ELSE
+///// FUNCTIONS
 
 document.addEventListener("DOMContentLoaded", () => {
   setupNewGameButton();
@@ -70,30 +70,46 @@ function setupNewGameButton() {
 
 const gameContainer = document.getElementById("game-container")!;
 
-function renderBoard(gameState: Game) {
+function renderBoard(game: Game) {
   gameContainer.innerHTML = "";
-  const boardDiv = createBoardDiv(gameState);
+  gameContainer.dataset.colorToMove = game.ColorToMove.toString();
+  const boardDiv = createBoardDiv(game);
   gameContainer.appendChild(boardDiv);
 }
 
-function createBoardDiv(gameState: Game): HTMLDivElement {
+function createBoardDiv(game: Game): HTMLDivElement {
   const boardDiv = document.createElement("div");
 
   for (let rank = 7; rank >= 0; rank--) {
     const rowDiv = document.createElement("div");
     rowDiv.classList.add("board-row");
 
-    for (let file = 0; file < boardsize; file++) {
-      const index = rank * boardsize + file;
-      const piece = gameState.board[index];
+    for (let file = 0; file < boardSize; file++) {
+      const index = rank * boardSize + file;
+      const piece = game.board[index];
 
       const squareDiv = createSquareDiv(piece, index);
       squareDiv.dataset.index = index.toString();
+      squareDiv.dataset.type = piece.type.toString();
 
       if ((rank + file) % 2 === 0) {
-        squareDiv.classList.add("light-chess-square");
-      } else {
         squareDiv.classList.add("dark-chess-square");
+      } else {
+        squareDiv.classList.add("light-chess-square");
+      }
+
+      if (rank === 0) {
+        const fileLabel = document.createElement("div");
+        fileLabel.classList.add("file-label");
+        fileLabel.textContent = String.fromCharCode(97 + file);
+        squareDiv.appendChild(fileLabel);
+      }
+
+      if (file === 7) {
+        const rankLabel = document.createElement("div");
+        rankLabel.classList.add("rank-label");
+        rankLabel.textContent = String(rank + 1);
+        squareDiv.appendChild(rankLabel);
       }
 
       rowDiv.appendChild(squareDiv);
@@ -108,8 +124,6 @@ function createBoardDiv(gameState: Game): HTMLDivElement {
 function createSquareDiv(piece: Piece, index: number): HTMLDivElement {
   const squareDiv = document.createElement("div");
   squareDiv.classList.add("chess-square");
-
-  squareDiv.textContent = index.toString();
 
   squareDiv.addEventListener("click", () => {
     handleSquareClick(index);
@@ -142,6 +156,17 @@ let selectedSquares: number[] = [];
 
 function handleSquareClick(index: number) {
   if (selectedSquares.length === 0) {
+    const colorToMove = parseInt(gameContainer.dataset.colorToMove!);
+    const piece = document.querySelector(
+      `[data-index='${index}']`
+    ) as HTMLElement;
+    const pieceType = parseInt(piece.dataset.type!);
+    const pieceColor = pieceType & 24;
+    console.log("Color to move:", colorToMove);
+    console.log("Piece color:", pieceColor);
+    if (pieceColor !== colorToMove) {
+      return;
+    }
     selectedSquares[0] = index;
     getLegalMoves(index);
     return;
@@ -151,11 +176,13 @@ function handleSquareClick(index: number) {
     removeHighlight();
     return;
   }
+
   selectedSquares[1] = index;
   const move: Move = {
     startSquare: selectedSquares[0],
     targetSquare: selectedSquares[1],
   };
+  console.log("Move:", move);
   sendMoveRequest(move);
   selectedSquares = [];
   removeHighlight();
@@ -164,7 +191,16 @@ function handleSquareClick(index: number) {
 function highlightLegalMoves(moves: Move[]) {
   removeHighlight();
 
+  if (moves.length === 0) return;
+
+  const startSquareIndex = moves[0].startSquare;
+  const startSquare = document.querySelector(
+    `[data-index='${startSquareIndex}']`
+  ) as HTMLElement;
+  startSquare.classList.add("highlight-square");
+
   for (let i = 0; i < moves.length; i++) {
+    if (i === startSquareIndex) continue;
     highlightSquare(moves[i].targetSquare);
   }
 }
@@ -173,21 +209,31 @@ function highlightSquare(index: number) {
   const square = document.querySelector(
     `[data-index='${index}']`
   ) as HTMLElement;
-  square.classList.add("highlighted-square");
 
-  const circle = document.createElement("div");
-  circle.classList.add("highlight-circle");
-  square.appendChild(circle);
+  const pieceType = parseInt(square.dataset.type!);
+  if (pieceType !== PieceType.None) {
+    const borderHighlight = document.createElement("div");
+    borderHighlight.classList.add("highlight-border");
+    square.appendChild(borderHighlight);
+  } else {
+    const circle = document.createElement("div");
+    circle.classList.add("highlight-circle");
+    square.appendChild(circle);
+  }
 }
 
 function removeHighlight() {
   const squares = document.getElementsByClassName("chess-square");
   for (let i = 0; i < squares.length; i++) {
     const square = squares[i] as HTMLElement;
-    square.classList.remove("highlighted-square");
+    square.classList.remove("highlight-square");
     const existingCircle = square.querySelector(".highlight-circle");
     if (existingCircle) {
       existingCircle.remove();
+    }
+    const existingBorder = square.querySelector(".highlight-border");
+    if (existingBorder) {
+      existingBorder.remove();
     }
   }
 }
@@ -253,7 +299,6 @@ async function currentGameState(): Promise<Game> {
 async function getLegalMoves(index: number) {
   try {
     const moves = await fetchLegalMoves(index);
-    console.log("Legal moves:", moves);
     highlightLegalMoves(moves);
   } catch (error) {
     console.error("There was a problem with fetching legal moves:", error);
