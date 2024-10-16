@@ -1,9 +1,14 @@
 package test
 
 import (
+	"fmt"
 	"testing"
 	game "web-chess/src"
 )
+
+func compareMovesErrorMessage(expected, got []game.Move) string {
+	return fmt.Sprintf("\nExpected:\n%v\nGot:\n%v", expected, got)
+}
 
 func movesEqualIgnoreFlag(m1, m2 game.Move) bool {
 	return m1.StartSquare == m2.StartSquare && m1.TargetSquare == m2.TargetSquare
@@ -36,7 +41,6 @@ func TestKingMoves(t *testing.T) {
 	g := game.NewGameFromFen(kingFen)
 
 	kingMoves := g.LegalMoves(4)
-	t.Log("king moves:", kingMoves)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 4, TargetSquare: 3},
@@ -47,7 +51,7 @@ func TestKingMoves(t *testing.T) {
 	}
 
 	if !movesEqual(expectedMoves, kingMoves) {
-		t.Errorf("Expected %v, got %v", expectedMoves, kingMoves)
+		t.Error(compareMovesErrorMessage(expectedMoves, kingMoves))
 	}
 }
 
@@ -57,7 +61,6 @@ func TestRookMoves(t *testing.T) {
 	g := game.NewGameFromFen(rookFen)
 
 	rookMoves := g.LegalMoves(0)
-	t.Log("rook moves:", rookMoves)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 0, TargetSquare: 1},
@@ -78,7 +81,6 @@ func TestKnightMoves(t *testing.T) {
 	g := game.NewGameFromFen(knightFen)
 
 	knightMoves := g.LegalMoves(28)
-	t.Log("knight moves:", knightMoves)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 28, TargetSquare: 43},
@@ -92,7 +94,7 @@ func TestKnightMoves(t *testing.T) {
 	}
 
 	if !movesEqual(expectedMoves, knightMoves) {
-		t.Errorf("Expected %v, got %v", expectedMoves, knightMoves)
+		t.Error(compareMovesErrorMessage(expectedMoves, knightMoves))
 	}
 }
 
@@ -100,7 +102,6 @@ func TestKnightMovesStart(t *testing.T) {
 	g := game.NewGame()
 
 	knightMoves := g.LegalMoves(1)
-	t.Log("knight moves:", knightMoves)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 1, TargetSquare: 16},
@@ -108,7 +109,7 @@ func TestKnightMovesStart(t *testing.T) {
 	}
 
 	if !movesEqual(expectedMoves, knightMoves) {
-		t.Errorf("Expected %v, got %v", expectedMoves, knightMoves)
+		t.Error(compareMovesErrorMessage(expectedMoves, knightMoves))
 	}
 }
 
@@ -116,7 +117,6 @@ func TestPawnMovesStart(t *testing.T) {
 	g := game.NewGame()
 
 	pawnMoves := g.LegalMoves(8)
-	t.Log("pawn moves:", pawnMoves)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 8, TargetSquare: 16},
@@ -124,7 +124,7 @@ func TestPawnMovesStart(t *testing.T) {
 	}
 
 	if !movesEqual(expectedMoves, pawnMoves) {
-		t.Errorf("Expected %v, got %v", expectedMoves, pawnMoves)
+		t.Error(compareMovesErrorMessage(expectedMoves, pawnMoves))
 	}
 }
 
@@ -135,14 +135,13 @@ func TestPawnMovesAfterStart(t *testing.T) {
 	g.Move(game.Move{StartSquare: 51, TargetSquare: 43})
 
 	pawnMoves := g.LegalMoves(16)
-	t.Log("pawn moves:", pawnMoves)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 16, TargetSquare: 24},
 	}
 
 	if !movesEqual(expectedMoves, pawnMoves) {
-		t.Errorf("Expected %v, got %v", expectedMoves, pawnMoves)
+		t.Error(compareMovesErrorMessage(expectedMoves, pawnMoves))
 	}
 }
 
@@ -152,7 +151,6 @@ func TestPawnDiagonalCapture(t *testing.T) {
 	g := game.NewGameFromFen(pawnFen)
 
 	pawnMoves := g.LegalMoves(20)
-	t.Log("pawn moves:", pawnMoves)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 20, TargetSquare: 28},
@@ -160,7 +158,7 @@ func TestPawnDiagonalCapture(t *testing.T) {
 	}
 
 	if !movesEqual(expectedMoves, pawnMoves) {
-		t.Errorf("Expected %v, got %v", expectedMoves, pawnMoves)
+		t.Error(compareMovesErrorMessage(expectedMoves, pawnMoves))
 	}
 }
 
@@ -170,7 +168,6 @@ func TestBishopMoves(t *testing.T) {
 	g := game.NewGameFromFen(bishopFen)
 
 	bishopMoves := g.LegalMoves(9)
-	t.Log("bishop moves:", bishopMoves)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 9, TargetSquare: 0},
@@ -185,7 +182,7 @@ func TestBishopMoves(t *testing.T) {
 	}
 
 	if !movesEqual(expectedMoves, bishopMoves) {
-		t.Errorf("Expected %v, got %v", expectedMoves, bishopMoves)
+		t.Error(compareMovesErrorMessage(expectedMoves, bishopMoves))
 	}
 }
 
@@ -195,7 +192,6 @@ func TestQueenMoves(t *testing.T) {
 	g := game.NewGameFromFen(queenFen)
 
 	queenMoves := g.LegalMoves(1)
-	t.Log("queen moves:", queenMoves)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 1, TargetSquare: 0},
@@ -218,7 +214,7 @@ func TestQueenMoves(t *testing.T) {
 	}
 
 	if !movesEqual(expectedMoves, queenMoves) {
-		t.Errorf("Expected %v, got %v", expectedMoves, queenMoves)
+		t.Error(compareMovesErrorMessage(expectedMoves, queenMoves))
 	}
 }
 
@@ -237,6 +233,27 @@ func TestPawnEnPassant(t *testing.T) {
 	}
 
 	if !movesEqual(expectedMoves, pawnMoves) {
-		t.Errorf("Expected %v, got %v", expectedMoves, pawnMoves)
+		t.Error(compareMovesErrorMessage(expectedMoves, pawnMoves))
+	}
+}
+
+func TestCastling(t *testing.T) {
+	castlingFen := "4k3/8/8/8/8/8/8/R3K3 w Q - 0 1"
+
+	g := game.NewGameFromFen(castlingFen)
+
+	kingMoves := g.LegalMoves(4)
+
+	expectedMoves := []game.Move{
+		{StartSquare: 4, TargetSquare: 3},
+		{StartSquare: 4, TargetSquare: 5},
+		{StartSquare: 4, TargetSquare: 11},
+		{StartSquare: 4, TargetSquare: 12},
+		{StartSquare: 4, TargetSquare: 13},
+		{StartSquare: 4, TargetSquare: 2},
+	}
+
+	if !movesEqual(expectedMoves, kingMoves) {
+		t.Error(compareMovesErrorMessage(expectedMoves, kingMoves))
 	}
 }

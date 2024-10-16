@@ -148,6 +148,35 @@ func (g *Game) generateKingMoves(startSquare int) []Move {
 
 		moves = append(moves, Move{startSquare, targetSquare, NoFlag})
 	}
+
+	// Castling
+	splitFen := strings.Split(g.currentFen, " ")
+	castlingRights := splitFen[2]
+	if piece.color() == White && g.ColorToMove == White && startSquare == 4 {
+		if strings.Contains(castlingRights, "K") {
+			if g.Board[5].pieceType() == None && g.Board[6].pieceType() == None {
+				moves = append(moves, Move{4, 6, Castling})
+			}
+		}
+		if strings.Contains(castlingRights, "Q") {
+			if g.Board[3].pieceType() == None && g.Board[2].pieceType() == None && g.Board[1].pieceType() == None {
+				moves = append(moves, Move{4, 2, Castling})
+			}
+		}
+	}
+	if piece.color() == Black && g.ColorToMove == Black && startSquare == 60 {
+		if strings.Contains(castlingRights, "k") {
+			if g.Board[61].pieceType() == None && g.Board[62].pieceType() == None {
+				moves = append(moves, Move{60, 62, Castling})
+			}
+		}
+		if strings.Contains(castlingRights, "q") {
+			if g.Board[59].pieceType() == None && g.Board[58].pieceType() == None && g.Board[57].pieceType() == None {
+				moves = append(moves, Move{60, 58, Castling})
+			}
+		}
+	}
+
 	return moves
 }
 

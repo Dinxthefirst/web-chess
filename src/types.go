@@ -17,9 +17,11 @@ const (
 )
 
 type Game struct {
-	Board       [BoardSize * BoardSize]Piece `json:"board"`
-	ColorToMove Color                        `json:"ColorToMove"`
-	currentFen  string
+	Board           [BoardSize * BoardSize]Piece `json:"board"`
+	ColorToMove     Color                        `json:"ColorToMove"`
+	currentFen      string
+	halfMoveCounter int
+	fullMoveCounter int
 }
 
 func (g *Game) GetFen() string {
