@@ -32,6 +32,18 @@ func precomputedMoveData() {
 	}
 }
 
+func (g *Game) LegalMoves(index int) []Move {
+	moves := g.generateMoves()
+
+	filteredMoves := []Move{}
+	for _, m := range moves {
+		if m.StartSquare == index {
+			filteredMoves = append(filteredMoves, m)
+		}
+	}
+	return filteredMoves
+}
+
 func (g *Game) generateMoves() []Move {
 	moves := []Move{}
 

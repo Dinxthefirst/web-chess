@@ -1,5 +1,10 @@
 package game
 
+import (
+	"strconv"
+	"strings"
+)
+
 func abs(x int) int {
 	if x < 0 {
 		return -x
@@ -60,4 +65,72 @@ func symbolForPiece(piece Piece) string {
 		}
 	}
 	return ""
+}
+
+func parseFen(fen string) (pieces string, color string, halfMoveCounter int, fullMoveCounter int, err error) {
+	splitFen := strings.Split(fen, " ")
+	pieces = splitFen[0]
+	color = splitFen[1]
+	halfMoveCounter, err = strconv.Atoi(splitFen[4])
+	if err != nil {
+		return "", "", 0, 0, err
+	}
+	fullMoveCounter, err = strconv.Atoi(splitFen[5])
+	if err != nil {
+		return "", "", 0, 0, err
+	}
+	return pieces, color, halfMoveCounter, fullMoveCounter, nil
+}
+
+func createPiece(char rune) Piece {
+	color := White
+	if char >= 'a' && char <= 'z' {
+		color = Black
+	}
+	pieceType := None
+	switch char {
+	case 'p', 'P':
+		pieceType = Pawn
+	case 'n', 'N':
+		pieceType = Knight
+	case 'b', 'B':
+		pieceType = Bishop
+	case 'r', 'R':
+		pieceType = Rook
+	case 'q', 'Q':
+		pieceType = Queen
+	case 'k', 'K':
+		pieceType = King
+	}
+	return Piece{pieceType | color}
+}
+
+func updateCastlingRights(castlingRights string, move Move) string {
+	if move.TargetSquare == 6 {
+		castlingRights = strings.Replace(castlingRights, "K", "", -1)
+	}
+	if move.TargetSquare == 2 {
+		castlingRights = strings.Replace(castlingRights, "Q", "", -1)
+	}
+	if move.TargetSquare == 58 {
+		castlingRights = strings.Replace(castlingRights, "k", "", -1)
+	}
+	if move.TargetSquare == 62 {
+		castlingRights = strings.Replace(castlingRights, "q", "", -1)
+	}
+	if castlingRights == "" {
+		castlingRights = "-"
+	}
+	return castlingRights
+}
+
+func enPassantSquare(move Move, colorToMove Color) int {
+	var enPassantSquare int
+	if colorToMove == White {
+		enPassantSquare = move.TargetSquare + 8
+	}
+	if colorToMove == Black {
+		enPassantSquare = move.TargetSquare - 8
+	}
+	return enPassantSquare
 }

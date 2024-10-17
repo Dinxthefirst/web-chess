@@ -17,58 +17,46 @@ func NewGameFromFen(fen string) *Game {
 	g := &Game{}
 	g.Board = [BoardSize * BoardSize]Piece{}
 	g.LoadPositionFromFen(fen)
-	g.ColorToMove = White
-	g.halfMoveCounter = 0
-	g.fullMoveCounter = 1
 	return g
 }
 
-func (g *Game) LoadPositionFromFen(fen string) {
-	splitFen := strings.Split(fen, " ")
-	g.LoadPiecesFromFen(splitFen[0])
-
-	if splitFen[1] == "w" {
-		g.ColorToMove = White
-	} else {
-		g.ColorToMove = Black
+func (g *Game) LoadPositionFromFen(fen string) error {
+	pieces, color, halfMoveCounter, fullMoveCounter, err := parseFen(fen)
+	if err != nil {
+		return err
 	}
 
+	g.LoadPiecesFromFen(pieces)
+
+	if color == "w" {
+		g.ColorToMove = White
+	} else if color == "b" {
+		g.ColorToMove = Black
+	} else {
+		return fmt.Errorf("invalid color to move")
+	}
+
+	g.halfMoveCounter = halfMoveCounter
+	g.fullMoveCounter = fullMoveCounter
+
 	g.currentFen = fen
+	return nil
 }
 
 func (g *Game) LoadPiecesFromFen(fen string) {
 	rank := 7
 	file := 0
-	for _, c := range fen {
-		if c == '/' {
+	for _, char := range fen {
+		if char == '/' {
 			file = 0
 			rank--
 			continue
 		}
-		if c >= '1' && c <= '8' {
-			file += int(c - '0')
+		if char >= '1' && char <= '8' {
+			file += int(char - '0')
 			continue
 		}
-		color := White
-		if c >= 'a' && c <= 'z' {
-			color = Black
-		}
-		pieceType := None
-		switch c {
-		case 'p', 'P':
-			pieceType = Pawn
-		case 'n', 'N':
-			pieceType = Knight
-		case 'b', 'B':
-			pieceType = Bishop
-		case 'r', 'R':
-			pieceType = Rook
-		case 'q', 'Q':
-			pieceType = Queen
-		case 'k', 'K':
-			pieceType = King
-		}
-		g.Board[rank*BoardSize+file] = Piece{pieceType | color}
+		g.Board[rank*BoardSize+file] = createPiece(char)
 		file++
 	}
 }
@@ -93,7 +81,8 @@ func (g *Game) Move(move Move) error {
 		g.fullMoveCounter++
 	}
 
-	g.generateFenFromPosition(move, flag)
+	lastMove := Move{move.StartSquare, move.TargetSquare, flag}
+	g.currentFen = g.generateFenFromPosition(lastMove)
 
 	return nil
 }
@@ -118,53 +107,52 @@ func (g *Game) movePiece(move Move, p Piece) (int, error) {
 	}
 
 	if flag == Castling {
-		if move.TargetSquare == 6 {
-			g.Board[5] = g.Board[7]
-			g.Board[7] = Piece{None}
-		}
-		if move.TargetSquare == 2 {
-			g.Board[3] = g.Board[0]
-			g.Board[0] = Piece{None}
-		}
-		if move.TargetSquare == 62 {
-			g.Board[61] = g.Board[63]
-			g.Board[63] = Piece{None}
-		}
-		if move.TargetSquare == 58 {
-			g.Board[59] = g.Board[56]
-			g.Board[56] = Piece{None}
-		}
+		g.handleCastling(move)
 	}
 
 	if flag == EnPassantCapture {
-		if g.ColorToMove == White {
-			g.Board[move.TargetSquare-8] = Piece{None}
-		} else {
-			g.Board[move.TargetSquare+8] = Piece{None}
-		}
+		g.handleEnPassantCapture(move)
 	}
 
 	g.Board[move.TargetSquare] = p
 	g.Board[move.StartSquare] = Piece{None}
+
 	return flag, nil
 }
 
-func (g *Game) LegalMoves(index int) []Move {
-	moves := g.generateMoves()
-
-	filteredMoves := []Move{}
-	for _, m := range moves {
-		if m.StartSquare == index {
-			filteredMoves = append(filteredMoves, m)
-		}
+func (g *Game) handleCastling(move Move) {
+	if move.TargetSquare == 6 {
+		g.Board[5] = g.Board[7]
+		g.Board[7] = Piece{None}
 	}
-	return filteredMoves
+	if move.TargetSquare == 2 {
+		g.Board[3] = g.Board[0]
+		g.Board[0] = Piece{None}
+	}
+	if move.TargetSquare == 62 {
+		g.Board[61] = g.Board[63]
+		g.Board[63] = Piece{None}
+	}
+	if move.TargetSquare == 58 {
+		g.Board[59] = g.Board[56]
+		g.Board[56] = Piece{None}
+	}
 }
 
-func (g *Game) generateFenFromPosition(lastMove Move, flag int) {
+func (g *Game) handleEnPassantCapture(move Move) {
+	if g.ColorToMove == White {
+		g.Board[move.TargetSquare-8] = Piece{None}
+	} else {
+		g.Board[move.TargetSquare+8] = Piece{None}
+	}
+}
+
+func (g *Game) generateFenFromPosition(lastMove Move) string {
 	fen := ""
+
 	for rank := 7; rank >= 0; rank-- {
 		emptySquares := 0
+
 		for file := 0; file < 8; file++ {
 			i := rank*BoardSize + file
 			piece := g.Board[i]
@@ -178,13 +166,17 @@ func (g *Game) generateFenFromPosition(lastMove Move, flag int) {
 			}
 			fen += symbolForPiece(piece)
 		}
+
 		if emptySquares > 0 {
 			fen += fmt.Sprintf("%d", emptySquares)
 		}
+
 		fen += "/"
 	}
 	fen = strings.TrimSuffix(fen, "/")
+
 	fen += " "
+
 	if g.ColorToMove == White {
 		fen += "w"
 	} else {
@@ -192,38 +184,17 @@ func (g *Game) generateFenFromPosition(lastMove Move, flag int) {
 	}
 	fen += " "
 
-	// TODO: castling rights
 	splitFen := strings.Split(g.currentFen, " ")
 	castlingRights := splitFen[2]
-	if flag == Castling {
-		if lastMove.TargetSquare == 6 {
-			castlingRights = strings.Replace(castlingRights, "K", "", -1)
-		}
-		if lastMove.TargetSquare == 2 {
-			castlingRights = strings.Replace(castlingRights, "Q", "", -1)
-		}
-		if lastMove.TargetSquare == 58 {
-			castlingRights = strings.Replace(castlingRights, "k", "", -1)
-		}
-		if lastMove.TargetSquare == 62 {
-			castlingRights = strings.Replace(castlingRights, "q", "", -1)
-		}
-		if castlingRights == "" {
-			castlingRights = "-"
-		}
+	if lastMove.flag == Castling {
+		castlingRights = updateCastlingRights(castlingRights, lastMove)
 	}
 	fen += castlingRights
 
 	fen += " "
 
-	if flag == PawnTwoForward {
-		var enPassantSquare int
-		if g.ColorToMove == White {
-			enPassantSquare = lastMove.TargetSquare + 8
-		} else {
-			enPassantSquare = lastMove.TargetSquare - 8
-		}
-		fen += toChessNotation(enPassantSquare)
+	if lastMove.flag == PawnTwoForward {
+		fen += toChessNotation(enPassantSquare(lastMove, g.ColorToMove))
 	} else {
 		fen += "-"
 	}
@@ -238,5 +209,5 @@ func (g *Game) generateFenFromPosition(lastMove Move, flag int) {
 	fullMove := strconv.Itoa(g.fullMoveCounter)
 	fen += fullMove
 
-	g.currentFen = fen
+	return fen
 }
