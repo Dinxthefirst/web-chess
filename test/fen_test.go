@@ -13,8 +13,8 @@ func TestNewGameFen(t *testing.T) {
 	g := game.NewGame()
 	expectedFenString := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
-	if g.GetFen() != expectedFenString {
-		t.Error(compareFenStringErrorMessage(expectedFenString, g.GetFen()))
+	if g.Fen() != expectedFenString {
+		t.Error(compareFenStringErrorMessage(expectedFenString, g.Fen()))
 	}
 }
 
@@ -25,8 +25,8 @@ func TestFenAfterMove(t *testing.T) {
 
 	expectedFenString := "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
 
-	if g.GetFen() != expectedFenString {
-		t.Error(compareFenStringErrorMessage(expectedFenString, g.GetFen()))
+	if g.Fen() != expectedFenString {
+		t.Error(compareFenStringErrorMessage(expectedFenString, g.Fen()))
 	}
 }
 
@@ -38,16 +38,16 @@ func TestFenAfterMultipleMoves(t *testing.T) {
 
 	expectedFenString := "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2"
 
-	if g.GetFen() != expectedFenString {
-		t.Errorf("\nExpected:\n%v\nGot:\n%v", expectedFenString, g.GetFen())
+	if g.Fen() != expectedFenString {
+		t.Errorf("\nExpected:\n%v\nGot:\n%v", expectedFenString, g.Fen())
 	}
 
 	g.Move(game.Move{StartSquare: 6, TargetSquare: 21}) // Nf3
 
 	expectedFenString = "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2"
 
-	if g.GetFen() != expectedFenString {
-		t.Error(compareFenStringErrorMessage(expectedFenString, g.GetFen()))
+	if g.Fen() != expectedFenString {
+		t.Error(compareFenStringErrorMessage(expectedFenString, g.Fen()))
 	}
 }
 
@@ -63,8 +63,8 @@ func TestFenAfterCastling(t *testing.T) {
 
 	expectedFenString := "4k3/8/8/8/8/8/8/2KR4 b - - 1 1"
 
-	if g.GetFen() != expectedFenString {
-		t.Error(compareFenStringErrorMessage(expectedFenString, g.GetFen()))
+	if g.Fen() != expectedFenString {
+		t.Error(compareFenStringErrorMessage(expectedFenString, g.Fen()))
 	}
 }
 
@@ -79,7 +79,7 @@ func TestFenAfterEnPassant(t *testing.T) {
 
 	expectedFenString := "rnbqkbnr/ppp2ppp/3Pp3/8/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 3"
 
-	if g.GetFen() != expectedFenString {
-		t.Error(compareFenStringErrorMessage(expectedFenString, g.GetFen()))
+	if g.Fen() != expectedFenString {
+		t.Error(compareFenStringErrorMessage(expectedFenString, g.Fen()))
 	}
 }

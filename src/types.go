@@ -24,8 +24,12 @@ type Game struct {
 	fullMoveCounter int
 }
 
-func (g *Game) GetFen() string {
+func (g *Game) Fen() string {
 	return g.currentFen
+}
+
+func (g *Game) opponent() Color {
+	return Color(g.ColorToMove ^ 24)
 }
 
 const (

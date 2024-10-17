@@ -29,6 +29,7 @@ func (s *Server) routes() {
 
 	gameHandler := &GameHandler{}
 	s.HandleFunc("/new-game", gameHandler.NewGame)
+	s.HandleFunc("/new-game-from-fen", gameHandler.NewGameFromFen)
 	s.HandleFunc("/move", gameHandler.Move)
 	s.HandleFunc("/current-state", gameHandler.CurrentState)
 	s.HandleFunc("/legal-moves/{index}", gameHandler.LegalMoves)

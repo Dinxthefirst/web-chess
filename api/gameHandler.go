@@ -21,6 +21,23 @@ func (h *GameHandler) NewGame(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(h.game)
 }
 
+func (h *GameHandler) NewGameFromFen(w http.ResponseWriter, req *http.Request) {
+	var fen struct {
+		Fen string `json:"fen"`
+	}
+
+	err := json.NewDecoder(req.Body).Decode(&fen)
+	if err != nil {
+		fmt.Printf("Error decoding fen: %v\n", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	h.game = game.NewGameFromFen(fen.Fen)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(h.game)
+}
+
 func (h *GameHandler) Move(w http.ResponseWriter, req *http.Request) {
 	var move game.Move
 

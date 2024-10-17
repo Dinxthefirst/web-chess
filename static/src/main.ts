@@ -65,7 +65,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function setupNewGameButton() {
   const newGameButton = document.getElementById("new-game-button")!;
-  newGameButton.addEventListener("click", startNewGame);
+  newGameButton.addEventListener("click", newGame);
+}
+
+function newGame() {
+  const fenInput = document.getElementById("fen") as HTMLInputElement;
+  const fen = fenInput.value;
+  console.log("FEN:", fen);
+
+  if (fen !== "") {
+    startNewGameFromFen(fen);
+  } else {
+    startNewGame();
+  }
 }
 
 const gameContainer = document.getElementById("game-container")!;
@@ -252,6 +264,32 @@ async function startNewGame() {
 
 async function fetchNewGame(): Promise<Game> {
   const response = await fetch("new-game", { method: "POST" });
+
+  if (!response.ok) {
+    throw new Error("Could not fetch new chess game");
+  }
+
+  return response.json() as Promise<Game>;
+}
+
+async function startNewGameFromFen(fen: string) {
+  try {
+    const gameState = await fetchNewGameFromFen(fen);
+    console.log("Fetched game state:", gameState);
+    renderBoard(gameState);
+  } catch (error) {
+    console.error("There was a problem with fetching a new game:", error);
+  }
+}
+
+async function fetchNewGameFromFen(fen: string): Promise<Game> {
+  const response = await fetch("new-game-from-fen", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ fen }),
+  });
 
   if (!response.ok) {
     throw new Error("Could not fetch new chess game");

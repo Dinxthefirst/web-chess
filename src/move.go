@@ -33,18 +33,53 @@ func precomputedMoveData() {
 }
 
 func (g *Game) LegalMoves(index int) []Move {
-	moves := g.generateMoves()
+	moves := g.generateMovesForColor(g.ColorToMove)
 
 	filteredMoves := []Move{}
-	for _, m := range moves {
-		if m.StartSquare == index {
-			filteredMoves = append(filteredMoves, m)
+	for _, move := range moves {
+		if move.StartSquare == index {
+			filteredMoves = append(filteredMoves, move)
 		}
 	}
 	return filteredMoves
 }
 
-func (g *Game) generateMoves() []Move {
+// func (g *Game) makeMove(m Move) Piece {
+// 	piece := g.Board[m.StartSquare]
+// 	opponentPiece := g.Board[m.TargetSquare]
+// 	g.Board[m.TargetSquare] = piece
+// 	g.Board[m.StartSquare] = Piece{None}
+// 	return opponentPiece
+// }
+
+// func (g *Game) undoMove(m Move, opponentPiece Piece) {
+// 	piece := g.Board[m.TargetSquare]
+// 	g.Board[m.StartSquare] = piece
+// 	g.Board[m.TargetSquare] = opponentPiece
+// }
+
+// func (g *Game) generateLegalMoves() []Move {
+// 	moves := g.generateMovesForColor(g.ColorToMove)
+
+// 	// fen := g.currentFen
+
+// 	filteredMoves := []Move{}
+// 	for _, m := range moves {
+// 		opponentPiece := g.makeMove(m)
+// 		isKingInCheck := g.isKingInCheck()
+// 		if !isKingInCheck {
+// 			filteredMoves = append(filteredMoves, m)
+// 		}
+// 		g.undoMove(m, opponentPiece)
+// 		// newFen := g.generateFenFromPosition(m)
+// 		// if newFen != fen {
+// 		// 	fmt.Printf("FEN mismatch:\n%s\n%s\n", fen, newFen)
+// 		// }
+// 	}
+// 	return filteredMoves
+// }
+
+func (g *Game) generateMovesForColor(color Color) []Move {
 	moves := []Move{}
 
 	for startSquare := 0; startSquare < BoardSize*BoardSize; startSquare++ {
@@ -52,25 +87,19 @@ func (g *Game) generateMoves() []Move {
 		if piece.pieceType() == None {
 			continue
 		}
-		if piece.color() != g.ColorToMove {
+		if piece.color() != color {
 			continue
 		}
 
-		if piece.pieceType() == Rook || piece.pieceType() == Bishop || piece.pieceType() == Queen {
-			slidingMoves := g.generateSlidingMoves(startSquare)
-			moves = append(moves, slidingMoves...)
-		}
-		if piece.pieceType() == Knight {
-			knightMoves := g.generateKnightMoves(startSquare)
-			moves = append(moves, knightMoves...)
-		}
-		if piece.pieceType() == King {
-			kingMoves := g.generateKingMoves(startSquare)
-			moves = append(moves, kingMoves...)
-		}
-		if piece.pieceType() == Pawn {
-			pawnMoves := g.generatePawnMoves(startSquare)
-			moves = append(moves, pawnMoves...)
+		switch piece.pieceType() {
+		case King:
+			moves = append(moves, g.generateKingMoves(startSquare)...)
+		case Pawn:
+			moves = append(moves, g.generatePawnMoves(startSquare)...)
+		case Knight:
+			moves = append(moves, g.generateKnightMoves(startSquare)...)
+		case Bishop, Rook, Queen:
+			moves = append(moves, g.generateSlidingMoves(startSquare)...)
 		}
 	}
 	return moves
@@ -161,7 +190,13 @@ func (g *Game) generateKingMoves(startSquare int) []Move {
 		moves = append(moves, Move{startSquare, targetSquare, NoFlag})
 	}
 
-	// Castling
+	moves = append(moves, g.generateCastlingMoves(startSquare, piece)...)
+
+	return moves
+}
+
+func (g *Game) generateCastlingMoves(startSquare int, piece Piece) []Move {
+	moves := []Move{}
 	splitFen := strings.Split(g.currentFen, " ")
 	castlingRights := splitFen[2]
 	if piece.color() == White && g.ColorToMove == White && startSquare == 4 {
@@ -188,7 +223,6 @@ func (g *Game) generateKingMoves(startSquare int) []Move {
 			}
 		}
 	}
-
 	return moves
 }
 
@@ -214,14 +248,40 @@ func (g *Game) generatePawnMoves(startSquare int) []Move {
 	}
 	for _, offset := range []int{7, 9} {
 		splitFen := strings.Split(g.currentFen, " ")
-		enPassantSquare := fromChessNotation(splitFen[3])
 		targetSquare = startSquare + offset*direction
 		if g.Board[targetSquare].color() != piece.color() && g.Board[targetSquare].color() != None {
 			moves = append(moves, Move{startSquare, targetSquare, NoFlag})
 		}
+		enPassantSquare := fromChessNotation(splitFen[3])
 		if enPassantSquare != -1 && targetSquare == enPassantSquare {
 			moves = append(moves, Move{startSquare, targetSquare, EnPassantCapture})
 		}
 	}
+
 	return moves
 }
+
+// func (g *Game) isKingInCheck() bool {
+// 	kingSquare := g.findKing()
+// 	if kingSquare == -1 {
+// 		return false
+// 	}
+
+// 	moves := g.generateMovesForColor(g.opponent())
+
+// 	for _, move := range moves {
+// 		if move.TargetSquare == kingSquare {
+// 			return true
+// 		}
+// 	}
+// 	return false
+// }
+
+// func (g *Game) findKing() int {
+// 	for i, piece := range g.Board {
+// 		if piece.pieceType() == King && piece.color() == g.ColorToMove {
+// 			return i
+// 		}
+// 	}
+// 	return -1
+// }
