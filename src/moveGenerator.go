@@ -44,40 +44,9 @@ func (g *Game) LegalMoves(index int) []Move {
 	return filteredMoves
 }
 
-// func (g *Game) makeMove(m Move) Piece {
-// 	piece := g.Board[m.StartSquare]
-// 	opponentPiece := g.Board[m.TargetSquare]
-// 	g.Board[m.TargetSquare] = piece
-// 	g.Board[m.StartSquare] = Piece{None}
-// 	return opponentPiece
-// }
-
-// func (g *Game) undoMove(m Move, opponentPiece Piece) {
-// 	piece := g.Board[m.TargetSquare]
-// 	g.Board[m.StartSquare] = piece
-// 	g.Board[m.TargetSquare] = opponentPiece
-// }
-
-// func (g *Game) generateLegalMoves() []Move {
-// 	moves := g.generateMovesForColor(g.ColorToMove)
-
-// 	// fen := g.currentFen
-
-// 	filteredMoves := []Move{}
-// 	for _, m := range moves {
-// 		opponentPiece := g.makeMove(m)
-// 		isKingInCheck := g.isKingInCheck()
-// 		if !isKingInCheck {
-// 			filteredMoves = append(filteredMoves, m)
-// 		}
-// 		g.undoMove(m, opponentPiece)
-// 		// newFen := g.generateFenFromPosition(m)
-// 		// if newFen != fen {
-// 		// 	fmt.Printf("FEN mismatch:\n%s\n%s\n", fen, newFen)
-// 		// }
-// 	}
-// 	return filteredMoves
-// }
+func (g *Game) GenerateMoves() []Move {
+	return g.generateMovesForColor(g.ColorToMove)
+}
 
 func (g *Game) generateMovesForColor(color Color) []Move {
 	moves := []Move{}
@@ -260,28 +229,3 @@ func (g *Game) generatePawnMoves(startSquare int) []Move {
 
 	return moves
 }
-
-// func (g *Game) isKingInCheck() bool {
-// 	kingSquare := g.findKing()
-// 	if kingSquare == -1 {
-// 		return false
-// 	}
-
-// 	moves := g.generateMovesForColor(g.opponent())
-
-// 	for _, move := range moves {
-// 		if move.TargetSquare == kingSquare {
-// 			return true
-// 		}
-// 	}
-// 	return false
-// }
-
-// func (g *Game) findKing() int {
-// 	for i, piece := range g.Board {
-// 		if piece.pieceType() == King && piece.color() == g.ColorToMove {
-// 			return i
-// 		}
-// 	}
-// 	return -1
-// }
