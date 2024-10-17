@@ -31,7 +31,7 @@ func (h *GameHandler) Move(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = h.game.Move(move)
+	err = h.game.MakeMove(move)
 	if err != nil {
 		fmt.Printf("Error moving piece: %v\n", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -57,7 +57,7 @@ func (h *GameHandler) LegalMoves(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	moves := h.game.LegalMoves(i)
+	moves := h.game.LegalMovesAtIndex(i)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(moves)
 }

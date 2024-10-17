@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -32,7 +33,46 @@ func precomputedMoveData() {
 	}
 }
 
+func (g *Game) generateLegalMoves() []Move {
+	fen := g.Fen()
+	pseudoLegalMoves := g.generateMoves()
+	legalMoves := []Move{}
+
+	fmt.Println("Pseudo legal moves: ", pseudoLegalMoves)
+
+	for _, move := range pseudoLegalMoves {
+		fmt.Println("Move: ", move)
+		err := g.MakeMove(move)
+		if err != nil {
+			fmt.Println("Error: ", err)
+			continue
+		}
+		opponentResponses := g.generateMoves()
+		fmt.Println("Opponent responses: ", opponentResponses)
+
+		kingCanBeCaptured := false
+		for _, opponentMove := range opponentResponses {
+			piece := g.Board[opponentMove.TargetSquare]
+			if piece.pieceType() == King && piece.color() == g.ColorToMove {
+				kingCanBeCaptured = true
+				break
+			}
+		}
+
+		if !kingCanBeCaptured {
+			legalMoves = append(legalMoves, move)
+		}
+		g.LoadPiecesFromFen(fen)
+	}
+	fmt.Println("Legal moves: ", legalMoves)
+
+	g.LoadPiecesFromFen(fen)
+
+	return legalMoves
+}
+
 func (g *Game) generateMoves() []Move {
+	fmt.Println("Generating moves")
 	moves := []Move{}
 
 	for startSquare := 0; startSquare < BoardSize*BoardSize; startSquare++ {

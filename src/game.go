@@ -17,9 +17,9 @@ func NewGameFromFen(fen string) *Game {
 	g := &Game{}
 	g.Board = [BoardSize * BoardSize]Piece{}
 	g.LoadPositionFromFen(fen)
-	g.ColorToMove = White
-	g.halfMoveCounter = 0
-	g.fullMoveCounter = 1
+	g.currentFen = fen
+	g.legalMoves = g.generateMoves()
+	g.legalMoves = g.generateLegalMoves()
 	return g
 }
 
@@ -33,7 +33,8 @@ func (g *Game) LoadPositionFromFen(fen string) {
 		g.ColorToMove = Black
 	}
 
-	g.currentFen = fen
+	g.halfMoveCounter, _ = strconv.Atoi(splitFen[4])
+	g.fullMoveCounter, _ = strconv.Atoi(splitFen[5])
 }
 
 func (g *Game) LoadPiecesFromFen(fen string) {
@@ -73,15 +74,8 @@ func (g *Game) LoadPiecesFromFen(fen string) {
 	}
 }
 
-func (g *Game) Move(move Move) error {
-	piece := g.Board[move.StartSquare]
-	if piece.pieceType() == None {
-		return fmt.Errorf("no piece at %d", move.StartSquare)
-	}
-	if piece.color() != g.ColorToMove {
-		return fmt.Errorf("wrong color")
-	}
-	flag, err := g.movePiece(move, piece)
+func (g *Game) MakeMove(move Move) error {
+	flag, err := g.moveWithoutFenUpdate(move)
 	if err != nil {
 		return err
 	}
@@ -94,12 +88,28 @@ func (g *Game) Move(move Move) error {
 	}
 
 	g.generateFenFromPosition(move, flag)
+	g.legalMoves = g.generateLegalMoves()
 
 	return nil
 }
 
+func (g *Game) moveWithoutFenUpdate(move Move) (int, error) {
+	piece := g.Board[move.StartSquare]
+	if piece.pieceType() == None {
+		return -1, fmt.Errorf("no piece at %d", move.StartSquare)
+	}
+	if piece.color() != g.ColorToMove {
+		return -1, fmt.Errorf("wrong color")
+	}
+	flag, err := g.movePiece(move, piece)
+	if err != nil {
+		return -1, err
+	}
+	return flag, nil
+}
+
 func (g *Game) movePiece(move Move, p Piece) (int, error) {
-	moves := g.LegalMoves(move.StartSquare)
+	moves := g.LegalMovesAtIndex(move.StartSquare)
 	validMove := false
 	flag := NoFlag
 	for _, m := range moves {
@@ -110,7 +120,7 @@ func (g *Game) movePiece(move Move, p Piece) (int, error) {
 		}
 	}
 	if !validMove {
-		return flag, fmt.Errorf("invalid move")
+		return flag, fmt.Errorf("no move valid from %d to %d", move.StartSquare, move.TargetSquare)
 	}
 
 	if g.Board[move.TargetSquare].pieceType() == None && p.pieceType() != Pawn {
@@ -149,11 +159,10 @@ func (g *Game) movePiece(move Move, p Piece) (int, error) {
 	return flag, nil
 }
 
-func (g *Game) LegalMoves(index int) []Move {
-	moves := g.generateMoves()
-
+func (g *Game) LegalMovesAtIndex(index int) []Move {
+	legalMoves := g.legalMoves
 	filteredMoves := []Move{}
-	for _, m := range moves {
+	for _, m := range legalMoves {
 		if m.StartSquare == index {
 			filteredMoves = append(filteredMoves, m)
 		}
@@ -192,7 +201,6 @@ func (g *Game) generateFenFromPosition(lastMove Move, flag int) {
 	}
 	fen += " "
 
-	// TODO: castling rights
 	splitFen := strings.Split(g.currentFen, " ")
 	castlingRights := splitFen[2]
 	if flag == Castling {
