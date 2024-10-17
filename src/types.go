@@ -19,13 +19,14 @@ const (
 type Game struct {
 	Board           [BoardSize * BoardSize]Piece `json:"board"`
 	ColorToMove     Color                        `json:"ColorToMove"`
-	currentFen      string
+	lastMove        Move
+	castlingRights  string
 	halfMoveCounter int
 	fullMoveCounter int
 }
 
 func (g *Game) Fen() string {
-	return g.currentFen
+	return g.generateFenFromPosition(g.lastMove)
 }
 
 func (g *Game) opponent() Color {

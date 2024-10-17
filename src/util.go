@@ -67,19 +67,20 @@ func symbolForPiece(piece Piece) string {
 	return ""
 }
 
-func parseFen(fen string) (pieces string, color string, halfMoveCounter int, fullMoveCounter int, err error) {
+func parseFen(fen string) (pieces string, color string, castlingRights string, halfMoveCounter int, fullMoveCounter int, err error) {
 	splitFen := strings.Split(fen, " ")
 	pieces = splitFen[0]
 	color = splitFen[1]
+	castlingRights = splitFen[2]
 	halfMoveCounter, err = strconv.Atoi(splitFen[4])
 	if err != nil {
-		return "", "", 0, 0, err
+		return "", "", "", 0, 0, err
 	}
 	fullMoveCounter, err = strconv.Atoi(splitFen[5])
 	if err != nil {
-		return "", "", 0, 0, err
+		return "", "", "", 0, 0, err
 	}
-	return pieces, color, halfMoveCounter, fullMoveCounter, nil
+	return pieces, color, castlingRights, halfMoveCounter, fullMoveCounter, nil
 }
 
 func createPiece(char rune) Piece {
