@@ -32,8 +32,8 @@ func precomputedMoveData() {
 	}
 }
 
-func (g *Game) LegalMoves(index int) []Move {
-	moves := g.GenerateLegalMoves()
+func (g *Game) LegalMovesAtIndex(index int) []Move {
+	moves := g.LegalMoves()
 
 	filteredMoves := []Move{}
 	for _, move := range moves {
@@ -42,6 +42,10 @@ func (g *Game) LegalMoves(index int) []Move {
 		}
 	}
 	return filteredMoves
+}
+
+func (g *Game) LegalMoves() []Move {
+	return g.GenerateLegalMoves()
 }
 
 func (g *Game) GenerateLegalMoves() []Move {
@@ -53,6 +57,7 @@ func (g *Game) GenerateLegalMoves() []Move {
 			filteredMoves = append(filteredMoves, move)
 		}
 	}
+
 	return filteredMoves
 }
 
@@ -168,12 +173,12 @@ func (g *Game) generateKnightMoves(startSquare int) []Move {
 	for _, offset := range KnightOffsets {
 		targetSquare := startSquare + offset
 
-		targetRank := targetSquare / BoardSize
-		targetFile := targetSquare % BoardSize
-
-		if targetRank < 0 || targetRank >= BoardSize || targetFile < 0 || targetFile >= BoardSize {
+		if targetSquare < 0 || targetSquare >= BoardSize*BoardSize {
 			continue
 		}
+
+		targetRank := targetSquare / BoardSize
+		targetFile := targetSquare % BoardSize
 
 		if abs(rank-targetRank) > 2 || abs(file-targetFile) > 2 {
 			continue
@@ -195,20 +200,12 @@ func (g *Game) generateKingMoves(startSquare int) []Move {
 	piece := g.Board[startSquare]
 
 	moves := []Move{}
-	for _, offset := range DirectionOffsets {
+	for i, offset := range DirectionOffsets {
+		if NumSquaresToEdge[startSquare][i] == 0 {
+			continue
+		}
+
 		targetSquare := startSquare + offset
-
-		if targetSquare < 0 || targetSquare >= BoardSize*BoardSize {
-			continue
-		}
-
-		file := startSquare % BoardSize
-		movesOfLeftSide := file == 0 && (offset == -1 || offset == -9 || offset == 7)
-		movesOfRightSide := file == BoardSize-1 && (offset == 1 || offset == 9 || offset == -7)
-
-		if movesOfLeftSide || movesOfRightSide {
-			continue
-		}
 
 		pieceOnTargetSquare := g.Board[targetSquare]
 
@@ -301,9 +298,7 @@ func (g *Game) generatePawnMoves(startSquare int) []Move {
 			continue
 		}
 
-		file := startSquare % BoardSize
-		diagonalFile := targetSquare % BoardSize
-		if abs(file-diagonalFile) != 1 {
+		if offset == 7 && NumSquaresToEdge[startSquare][3] == 0 || offset == 9 && NumSquaresToEdge[startSquare][2] == 0 {
 			continue
 		}
 

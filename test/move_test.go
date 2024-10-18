@@ -40,7 +40,7 @@ func TestKingMoves(t *testing.T) {
 
 	g := game.NewGameFromFen(kingFen)
 
-	kingMoves := g.LegalMoves(4)
+	kingMoves := g.LegalMovesAtIndex(4)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 4, TargetSquare: 3},
@@ -60,7 +60,7 @@ func TestKingMovesFromCorner(t *testing.T) {
 
 	g := game.NewGameFromFen(kingFen)
 
-	kingMoves := g.LegalMoves(0)
+	kingMoves := g.LegalMovesAtIndex(0)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 0, TargetSquare: 1},
@@ -78,7 +78,7 @@ func TestRookMoves(t *testing.T) {
 
 	g := game.NewGameFromFen(rookFen)
 
-	rookMoves := g.LegalMoves(0)
+	rookMoves := g.LegalMovesAtIndex(0)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 0, TargetSquare: 1},
@@ -98,7 +98,7 @@ func TestKnightMoves(t *testing.T) {
 
 	g := game.NewGameFromFen(knightFen)
 
-	knightMoves := g.LegalMoves(28)
+	knightMoves := g.LegalMovesAtIndex(28)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 28, TargetSquare: 43},
@@ -119,7 +119,7 @@ func TestKnightMoves(t *testing.T) {
 func TestKnightMovesStart(t *testing.T) {
 	g := game.NewGame()
 
-	knightMoves := g.LegalMoves(1)
+	knightMoves := g.LegalMovesAtIndex(1)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 1, TargetSquare: 16},
@@ -134,7 +134,7 @@ func TestKnightMovesStart(t *testing.T) {
 func TestPawnMovesStart(t *testing.T) {
 	g := game.NewGame()
 
-	pawnMoves := g.LegalMoves(8)
+	pawnMoves := g.LegalMovesAtIndex(8)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 8, TargetSquare: 16},
@@ -152,7 +152,7 @@ func TestPawnMovesAfterStart(t *testing.T) {
 	g.Move(game.Move{StartSquare: 8, TargetSquare: 16})
 	g.Move(game.Move{StartSquare: 51, TargetSquare: 43})
 
-	pawnMoves := g.LegalMoves(16)
+	pawnMoves := g.LegalMovesAtIndex(16)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 16, TargetSquare: 24},
@@ -168,7 +168,7 @@ func TestPawnDiagonalCapture(t *testing.T) {
 
 	g := game.NewGameFromFen(pawnFen)
 
-	pawnMoves := g.LegalMoves(20)
+	pawnMoves := g.LegalMovesAtIndex(20)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 20, TargetSquare: 28},
@@ -185,7 +185,7 @@ func TestPawnDiagonalCaptureAgain(t *testing.T) {
 
 	g := game.NewGameFromFen(pawnFen)
 
-	pawnMoves := g.LegalMoves(15)
+	pawnMoves := g.LegalMovesAtIndex(15)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 15, TargetSquare: 22},
@@ -203,7 +203,7 @@ func TestBishopMoves(t *testing.T) {
 
 	g := game.NewGameFromFen(bishopFen)
 
-	bishopMoves := g.LegalMoves(9)
+	bishopMoves := g.LegalMovesAtIndex(9)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 9, TargetSquare: 0},
@@ -227,7 +227,7 @@ func TestQueenMoves(t *testing.T) {
 
 	g := game.NewGameFromFen(queenFen)
 
-	queenMoves := g.LegalMoves(1)
+	queenMoves := g.LegalMovesAtIndex(1)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 1, TargetSquare: 0},
@@ -262,7 +262,7 @@ func TestPawnEnPassant(t *testing.T) {
 	g.Move(game.Move{StartSquare: 28, TargetSquare: 36}) // e5
 	g.Move(game.Move{StartSquare: 51, TargetSquare: 35}) // d5
 
-	pawnMoves := g.LegalMoves(36)
+	pawnMoves := g.LegalMovesAtIndex(36)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 36, TargetSquare: 43},
@@ -278,7 +278,7 @@ func TestCastling(t *testing.T) {
 
 	g := game.NewGameFromFen(castlingFen)
 
-	kingMoves := g.LegalMoves(4)
+	kingMoves := g.LegalMovesAtIndex(4)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 4, TargetSquare: 3},
@@ -301,7 +301,7 @@ func TestChecking(t *testing.T) {
 
 	g.Move(game.Move{StartSquare: 48, TargetSquare: 56}) // Ra8
 
-	kingMoves := g.LegalMoves(63)
+	kingMoves := g.LegalMovesAtIndex(63)
 
 	expectedMoves := []game.Move{
 		{StartSquare: 63, TargetSquare: 54},

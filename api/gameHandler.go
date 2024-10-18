@@ -90,7 +90,7 @@ func (h *GameHandler) LegalMoves(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	moves := h.game.LegalMoves(i)
+	moves := h.game.LegalMovesAtIndex(i)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(moves)
 }

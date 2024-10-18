@@ -26,11 +26,10 @@ func perft(g *game.Game, depth int) uint64 {
 // RESULT:
 // Depth: 0, Result: 1, Time: 0s
 // Depth: 1, Result: 20, Time: 0s
-// Depth: 2, Result: 400, Time: 1.0382ms
-// Depth: 3, Result: 8906, Time: 21.2538ms
-// Depth: 4, Result: 197530, Time: 442.9507ms
-// Depth: 5, Result: 4877322, Time: 10.8970973s
-// Depth: 6, Result: 119548601, Time: 5m9.07436s
+// Depth: 2, Result: 400, Time: 1.4761ms
+// Depth: 3, Result: 8,902, Time: 21.5ms
+// Depth: 4, Result: 197,281, Time: 435.8319ms
+// Depth: 5, Result: 4,865,591, Time: 10.8643912s
 // ACTUAL:
 // https://www.chessprogramming.org/Perft_Results#Initial_Position
 func RunPerft(depth int) {
