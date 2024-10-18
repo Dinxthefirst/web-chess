@@ -140,8 +140,6 @@ function handleSquareClick(index) {
         const piece = document.querySelector(`[data-index='${index}']`);
         const pieceType = parseInt(piece.dataset.type);
         const pieceColor = pieceType & 24;
-        console.log("Color to move:", colorToMove);
-        console.log("Piece color:", pieceColor);
         if (pieceColor !== colorToMove) {
             return;
         }

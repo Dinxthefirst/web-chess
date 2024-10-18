@@ -2,8 +2,6 @@ package game
 
 const BoardSize = 8
 
-type Color int
-
 const (
 	None = iota
 	King
@@ -16,21 +14,36 @@ const (
 	Black = 16
 )
 
+const (
+	whiteCastleKingsideMask  uint32 = 0b1111111111110111
+	whiteCastleQueensideMask uint32 = 0b1111111111111011
+	blackCastleKingsideMask  uint32 = 0b1111111111111101
+	blackCastleQueensideMask uint32 = 0b1111111111111110
+
+	whiteCastleMask uint32 = whiteCastleKingsideMask & whiteCastleQueensideMask
+	blackCastleMask uint32 = blackCastleKingsideMask & blackCastleQueensideMask
+)
+
 type Game struct {
-	Board           [BoardSize * BoardSize]Piece `json:"board"`
-	ColorToMove     Color                        `json:"ColorToMove"`
-	lastMove        Move
-	castlingRights  string
-	halfMoveCounter int
-	fullMoveCounter int
+	Board       [BoardSize * BoardSize]Piece `json:"board"`
+	ColorToMove int                          `json:"ColorToMove"`
+	// Bits 0-3: white and black kingside/queen side castling rights
+	//
+	// Bits 4-7: file of en passant square (starting from 1, 0 means no en passant square)
+	//
+	// Bits 8-13: captured piece type
+	//
+	// Bits 14-19: fifty move counter
+	//
+	// Bits 20-31: full move counter
+	currentGameState uint32
+	gameStateHistory []uint32
+	fiftyMoveCounter uint32
+	plyCount         uint32
 }
 
-func (g *Game) Fen() string {
-	return g.generateFenFromPosition(g.lastMove)
-}
-
-func (g *Game) opponent() Color {
-	return Color(g.ColorToMove ^ 24)
+func (g *Game) opponent() int {
+	return g.ColorToMove ^ 24
 }
 
 const (
@@ -54,8 +67,8 @@ type Piece struct {
 	Type int `json:"type"`
 }
 
-func (p *Piece) color() Color {
-	return Color(p.Type & 24)
+func (p *Piece) color() int {
+	return p.Type & 24
 }
 
 func (p *Piece) pieceType() int {

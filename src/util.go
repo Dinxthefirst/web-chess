@@ -67,20 +67,24 @@ func symbolForPiece(piece Piece) string {
 	return ""
 }
 
-func parseFen(fen string) (pieces string, color string, castlingRights string, halfMoveCounter int, fullMoveCounter int, err error) {
+func parseFen(fen string) (pieces, color, castlingRights, enPassantSquare string, fiftyMoveCounter, plyCount uint32, err error) {
 	splitFen := strings.Split(fen, " ")
 	pieces = splitFen[0]
 	color = splitFen[1]
 	castlingRights = splitFen[2]
-	halfMoveCounter, err = strconv.Atoi(splitFen[4])
+	enPassantSquare = splitFen[3]
+	fiftyMoveCounterInt, err := strconv.Atoi(splitFen[4])
 	if err != nil {
-		return "", "", "", 0, 0, err
+		return "", "", "", "", 0, 0, err
 	}
-	fullMoveCounter, err = strconv.Atoi(splitFen[5])
+	fiftyMoveCounter = uint32(fiftyMoveCounterInt)
+
+	plyCountInt, err := strconv.Atoi(splitFen[5])
 	if err != nil {
-		return "", "", "", 0, 0, err
+		return "", "", "", "", 0, 0, err
 	}
-	return pieces, color, castlingRights, halfMoveCounter, fullMoveCounter, nil
+	plyCount = uint32(plyCountInt)
+	return pieces, color, castlingRights, enPassantSquare, fiftyMoveCounter, plyCount, nil
 }
 
 func createPiece(char rune) Piece {
@@ -104,34 +108,4 @@ func createPiece(char rune) Piece {
 		pieceType = King
 	}
 	return Piece{pieceType | color}
-}
-
-func updateCastlingRights(castlingRights string, move Move) string {
-	if move.TargetSquare == 6 {
-		castlingRights = strings.Replace(castlingRights, "K", "", -1)
-	}
-	if move.TargetSquare == 2 {
-		castlingRights = strings.Replace(castlingRights, "Q", "", -1)
-	}
-	if move.TargetSquare == 58 {
-		castlingRights = strings.Replace(castlingRights, "k", "", -1)
-	}
-	if move.TargetSquare == 62 {
-		castlingRights = strings.Replace(castlingRights, "q", "", -1)
-	}
-	if castlingRights == "" {
-		castlingRights = "-"
-	}
-	return castlingRights
-}
-
-func enPassantSquare(move Move, colorToMove Color) int {
-	var enPassantSquare int
-	if colorToMove == White {
-		enPassantSquare = move.TargetSquare + 8
-	}
-	if colorToMove == Black {
-		enPassantSquare = move.TargetSquare - 8
-	}
-	return enPassantSquare
 }

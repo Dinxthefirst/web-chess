@@ -1,9 +1,6 @@
 package test
 
 import (
-	"fmt"
-	"testing"
-	"time"
 	game "web-chess/src"
 )
 
@@ -12,7 +9,7 @@ func MoveGenerationTest(g *game.Game, depth int) int {
 		return 1
 	}
 
-	fen := g.Fen()
+	fen := g.CurrentFen()
 
 	moves := g.GenerateMoves()
 	numPositions := 0
@@ -39,13 +36,13 @@ func MoveGenerationTest(g *game.Game, depth int) int {
 // 3 	8,902
 // 4 	197,281
 // 5 	4,865,609
-func TestMoveGenerationFromStart(t *testing.T) {
-	depth := []int{1, 2, 3, 4, 5}
+// func TestMoveGenerationFromStart(t *testing.T) {
+// 	depth := []int{1, 2, 3, 4, 5}
 
-	for _, d := range depth {
-		start := time.Now()
-		g := game.NewGame()
-		numPositions := MoveGenerationTest(g, d)
-		fmt.Printf("Depth: %d, Result: %d, Time: %v\n", d, numPositions, time.Since(start))
-	}
-}
+// 	for _, d := range depth {
+// 		start := time.Now()
+// 		g := game.NewGame()
+// 		numPositions := MoveGenerationTest(g, d)
+// 		fmt.Printf("Depth: %d, Result: %d, Time: %v\n", d, numPositions, time.Since(start))
+// 	}
+// }

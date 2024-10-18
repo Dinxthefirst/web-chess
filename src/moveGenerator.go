@@ -48,7 +48,7 @@ func (g *Game) GenerateMoves() []Move {
 	return g.generateMovesForColor(g.ColorToMove)
 }
 
-func (g *Game) generateMovesForColor(color Color) []Move {
+func (g *Game) generateMovesForColor(color int) []Move {
 	moves := []Move{}
 
 	for startSquare := 0; startSquare < BoardSize*BoardSize; startSquare++ {
@@ -159,39 +159,35 @@ func (g *Game) generateKingMoves(startSquare int) []Move {
 		moves = append(moves, Move{startSquare, targetSquare, NoFlag})
 	}
 
-	moves = append(moves, g.generateCastlingMoves(startSquare, piece)...)
+	moves = append(moves, g.generateCastlingMoves(startSquare)...)
 
 	return moves
 }
 
-func (g *Game) generateCastlingMoves(startSquare int, piece Piece) []Move {
+func (g *Game) generateCastlingMoves(startSquare int) []Move {
 	moves := []Move{}
-	splitFen := strings.Split(g.Fen(), " ")
-	castlingRights := splitFen[2]
-	if piece.color() == White && g.ColorToMove == White && startSquare == 4 {
-		if strings.Contains(castlingRights, "K") {
-			if g.Board[5].pieceType() == None && g.Board[6].pieceType() == None {
-				moves = append(moves, Move{4, 6, Castling})
-			}
+
+	if g.currentGameState&0b1111 == 0 {
+		return moves
+	}
+
+	castlingRights := g.currentGameState & 0b1111
+	if g.ColorToMove == White {
+		if ((castlingRights >> 3) & 1) == 1 {
+			moves = append(moves, Move{startSquare, 6, Castling})
 		}
-		if strings.Contains(castlingRights, "Q") {
-			if g.Board[3].pieceType() == None && g.Board[2].pieceType() == None && g.Board[1].pieceType() == None {
-				moves = append(moves, Move{4, 2, Castling})
-			}
+		if ((castlingRights >> 2) & 1) == 1 {
+			moves = append(moves, Move{startSquare, 2, Castling})
+		}
+	} else {
+		if ((castlingRights >> 1) & 1) == 1 {
+			moves = append(moves, Move{startSquare, 62, Castling})
+		}
+		if (castlingRights & 1) == 1 {
+			moves = append(moves, Move{startSquare, 58, Castling})
 		}
 	}
-	if piece.color() == Black && g.ColorToMove == Black && startSquare == 60 {
-		if strings.Contains(castlingRights, "k") {
-			if g.Board[61].pieceType() == None && g.Board[62].pieceType() == None {
-				moves = append(moves, Move{60, 62, Castling})
-			}
-		}
-		if strings.Contains(castlingRights, "q") {
-			if g.Board[59].pieceType() == None && g.Board[58].pieceType() == None && g.Board[57].pieceType() == None {
-				moves = append(moves, Move{60, 58, Castling})
-			}
-		}
-	}
+
 	return moves
 }
 
@@ -216,11 +212,11 @@ func (g *Game) generatePawnMoves(startSquare int) []Move {
 		}
 	}
 	for _, offset := range []int{7, 9} {
-		splitFen := strings.Split(g.Fen(), " ")
 		targetSquare = startSquare + offset*direction
 		if g.Board[targetSquare].color() != piece.color() && g.Board[targetSquare].color() != None {
 			moves = append(moves, Move{startSquare, targetSquare, NoFlag})
 		}
+		splitFen := strings.Split(g.CurrentFen(), " ")
 		enPassantSquare := fromChessNotation(splitFen[3])
 		if enPassantSquare != -1 && targetSquare == enPassantSquare {
 			moves = append(moves, Move{startSquare, targetSquare, EnPassantCapture})
