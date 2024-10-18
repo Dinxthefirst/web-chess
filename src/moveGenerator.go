@@ -306,7 +306,9 @@ func (g *Game) generatePawnMoves(startSquare int) []Move {
 			continue
 		}
 
-		if offset == 7 && NumSquaresToEdge[startSquare][3] == 0 || offset == 9 && NumSquaresToEdge[startSquare][2] == 0 {
+		startFile := startSquare % BoardSize
+		targetFile := targetSquare % BoardSize
+		if abs(startFile-targetFile) != 1 {
 			continue
 		}
 

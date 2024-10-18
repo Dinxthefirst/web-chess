@@ -2,13 +2,13 @@ package perft
 
 import (
 	"fmt"
+	"sort"
 	"time"
 	game "web-chess/src"
 )
 
 var actualResults = map[int]map[int]uint64{
 	1: {
-		0: 1,
 		1: 20,
 		2: 400,
 		3: 8902,
@@ -19,7 +19,6 @@ var actualResults = map[int]map[int]uint64{
 		8: 84998978956,
 	},
 	2: {
-		0: 1,
 		1: 48,
 		2: 2039,
 		3: 97862,
@@ -27,7 +26,6 @@ var actualResults = map[int]map[int]uint64{
 		5: 193690690,
 	},
 	3: {
-		0: 1,
 		1: 14,
 		2: 191,
 		3: 2812,
@@ -35,7 +33,6 @@ var actualResults = map[int]map[int]uint64{
 		5: 674624,
 	},
 	4: {
-		0: 1,
 		1: 6,
 		2: 264,
 		3: 9467,
@@ -43,7 +40,6 @@ var actualResults = map[int]map[int]uint64{
 		5: 15833292,
 	},
 	5: {
-		0: 1,
 		1: 44,
 		2: 1486,
 		3: 62379,
@@ -51,7 +47,6 @@ var actualResults = map[int]map[int]uint64{
 		5: 89941194,
 	},
 	6: {
-		0: 1,
 		1: 46,
 		2: 2079,
 		3: 89890,
@@ -61,11 +56,11 @@ var actualResults = map[int]map[int]uint64{
 }
 
 func perft(g *game.Game, depth int) uint64 {
-	if depth == 0 {
-		return 1
-	}
-
 	moves := g.GenerateLegalMoves()
+
+	if depth == 1 {
+		return uint64(len(moves))
+	}
 	var numPositions uint64 = 0
 
 	for _, move := range moves {
@@ -88,23 +83,12 @@ func RunPerftTest() {
 
 // https://www.chessprogramming.org/Perft_Results#Initial_Position
 func RunPerft(position, depth int) {
-	fen := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-	if position == 2 {
-		fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
-	} else if position == 3 {
-		fen = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1"
-	} else if position == 4 {
-		fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
-	} else if position == 5 {
-		fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8"
-	} else if position == 6 {
-		fen = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10"
-	}
+	fen := getFENPosition(position)
 
-	fmt.Printf("Running perft with depth %d on position %s\n", depth, fen)
+	fmt.Printf("Running perft with depth %d with position %d\n", depth, position)
 
 	depths := []int{}
-	for i := 0; i <= depth; i++ {
+	for i := 1; i <= depth; i++ {
 		depths = append(depths, i)
 	}
 
@@ -120,4 +104,69 @@ func RunPerft(position, depth int) {
 			fmt.Println()
 		}
 	}
+}
+
+func perftDivide(g *game.Game, startDepth, currentDepth int) (map[string]uint64, uint64) {
+	moves := g.GenerateLegalMoves()
+
+	if currentDepth == 1 {
+		return nil, uint64(len(moves))
+	}
+	results := make(map[string]uint64)
+	numLocalNodes := uint64(0)
+
+	for _, move := range moves {
+		g.MakeMove(move)
+		_, numMovesForThisNode := perftDivide(g, startDepth, currentDepth-1)
+		numLocalNodes += numMovesForThisNode
+		g.UnmakeMove(move)
+
+		fromFile := move.StartSquare % 8
+		fromRank := move.StartSquare / 8
+		fromMoveString := string(rune(fromFile+'a')) + string(rune(fromRank+'1'))
+		toFile := move.TargetSquare % 8
+		toRank := move.TargetSquare / 8
+		toMoveString := string(rune(toFile+'a')) + string(rune(toRank+'1'))
+		if currentDepth == startDepth {
+			results[fromMoveString+toMoveString] += numMovesForThisNode
+		}
+	}
+	return results, numLocalNodes
+}
+
+func RunPerftDivide(position, depth int) {
+	fen := getFENPosition(position)
+
+	g := game.NewGameFromFen(fen)
+	results, numNodes := perftDivide(g, depth, depth)
+
+	keys := make([]string, 0, len(results))
+	for key := range results {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		fmt.Printf("%s: %d\n", key, results[key])
+	}
+	fmt.Printf("Total nodes: %d\n", numNodes)
+}
+
+func getFENPosition(position int) string {
+	fen := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+	if position == 2 {
+		fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
+	} else if position == 3 {
+		fen = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1"
+	} else if position == 4 {
+		fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
+	} else if position == 5 {
+		fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8"
+	} else if position == 6 {
+		fen = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10"
+	} else if position == -1 {
+		// debugging position
+		fen = "rnbqkbnr/1ppppppp/p7/8/7P/P7/1PPPPPP1/RNBQKBNR b KQkq - 0 2"
+	}
+	return fen
 }
