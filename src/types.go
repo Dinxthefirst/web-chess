@@ -42,10 +42,6 @@ type Game struct {
 	plyCount         uint32
 }
 
-func (g *Game) opponent() int {
-	return g.ColorToMove ^ 24
-}
-
 const (
 	NoFlag = iota
 	EnPassantCapture

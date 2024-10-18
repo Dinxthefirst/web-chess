@@ -22,7 +22,6 @@ func (g *Game) loadPositionFromFen(fen string) error {
 		return fmt.Errorf("invalid color to move")
 	}
 
-	g.gameStateHistory = []uint32{}
 	var currentGameState uint32 = 0
 	var newCastleState uint32 = 0
 	if strings.Contains(castlingRights, "K") {
@@ -49,6 +48,8 @@ func (g *Game) loadPositionFromFen(fen string) error {
 	g.fiftyMoveCounter = uint32(fiftyMoveCounter)
 	g.plyCount = plyCount
 
+	g.gameStateHistory = []uint32{}
+	g.gameStateHistory = append(g.gameStateHistory, currentGameState)
 	return nil
 }
 

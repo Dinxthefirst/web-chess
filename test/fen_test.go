@@ -83,3 +83,15 @@ func TestFenAfterEnPassant(t *testing.T) {
 		t.Error(compareFenStringErrorMessage(expectedFenString, g.CurrentFen()))
 	}
 }
+
+func TestFenAfterUnmakingMove(t *testing.T) {
+	initialFen := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+	g := game.NewGameFromFen(initialFen)
+
+	g.Move(game.Move{StartSquare: 12, TargetSquare: 28})       // e4
+	g.UnmakeMove(game.Move{StartSquare: 12, TargetSquare: 28}) // e4
+
+	if g.CurrentFen() != initialFen {
+		t.Error(compareFenStringErrorMessage(initialFen, g.CurrentFen()))
+	}
+}

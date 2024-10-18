@@ -9,15 +9,13 @@ func MoveGenerationTest(g *game.Game, depth int) int {
 		return 1
 	}
 
-	fen := g.CurrentFen()
-
 	moves := g.GenerateMoves()
 	numPositions := 0
 
 	for _, move := range moves {
-		g.Move(move)
+		g.MakeMove(move)
 		numPositions += MoveGenerationTest(g, depth-1)
-		g = game.NewGameFromFen(fen)
+		g.UnmakeMove(move)
 	}
 
 	return numPositions
