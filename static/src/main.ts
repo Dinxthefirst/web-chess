@@ -214,16 +214,20 @@ function handleSquareClick(index: number) {
   removeHighlight();
 }
 
+function highlightClickedSquare(index: number) {
+  const square = document.querySelector(
+    `[data-index='${index}']`
+  ) as HTMLElement;
+  square.classList.add("highlight-square");
+}
+
 function highlightLegalMoves(moves: Move[]) {
   removeHighlight();
 
   if (moves.length === 0) return;
 
   const startSquareIndex = moves[0].startSquare;
-  const startSquare = document.querySelector(
-    `[data-index='${startSquareIndex}']`
-  ) as HTMLElement;
-  startSquare.classList.add("highlight-square");
+  highlightClickedSquare(startSquareIndex);
 
   for (let i = 0; i < moves.length; i++) {
     if (i === startSquareIndex) continue;

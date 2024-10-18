@@ -300,6 +300,13 @@ func (g *Game) generatePawnMoves(startSquare int) []Move {
 		if targetSquare < 0 || targetSquare >= BoardSize*BoardSize {
 			continue
 		}
+
+		file := startSquare % BoardSize
+		diagonalFile := targetSquare % BoardSize
+		if abs(file-diagonalFile) != 1 {
+			continue
+		}
+
 		if g.Board[targetSquare].color() != piece.color() && g.Board[targetSquare].color() != None {
 			moves = append(moves, Move{startSquare, targetSquare, NoFlag})
 		}

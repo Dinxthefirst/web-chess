@@ -174,13 +174,16 @@ function handleSquareClick(index) {
     selectedSquares = [];
     removeHighlight();
 }
+function highlightClickedSquare(index) {
+    const square = document.querySelector(`[data-index='${index}']`);
+    square.classList.add("highlight-square");
+}
 function highlightLegalMoves(moves) {
     removeHighlight();
     if (moves.length === 0)
         return;
     const startSquareIndex = moves[0].startSquare;
-    const startSquare = document.querySelector(`[data-index='${startSquareIndex}']`);
-    startSquare.classList.add("highlight-square");
+    highlightClickedSquare(startSquareIndex);
     for (let i = 0; i < moves.length; i++) {
         if (i === startSquareIndex)
             continue;

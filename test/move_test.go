@@ -180,6 +180,24 @@ func TestPawnDiagonalCapture(t *testing.T) {
 	}
 }
 
+func TestPawnDiagonalCaptureAgain(t *testing.T) {
+	pawnFen := "3k4/8/8/8/r7/6r1/7P/3K4 w - - 0 1"
+
+	g := game.NewGameFromFen(pawnFen)
+
+	pawnMoves := g.LegalMoves(15)
+
+	expectedMoves := []game.Move{
+		{StartSquare: 15, TargetSquare: 22},
+		{StartSquare: 15, TargetSquare: 23},
+		{StartSquare: 15, TargetSquare: 31},
+	}
+
+	if !movesEqual(expectedMoves, pawnMoves) {
+		t.Error(compareMovesErrorMessage(expectedMoves, pawnMoves))
+	}
+}
+
 func TestBishopMoves(t *testing.T) {
 	bishopFen := "4k3/8/8/8/8/8/1B7/4K3 w - - 0 1"
 
