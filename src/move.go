@@ -12,7 +12,9 @@ func (g *Game) Move(move Move) error {
 	for _, m := range moves {
 		if m.StartSquare == move.StartSquare && m.TargetSquare == move.TargetSquare {
 			validMove = true
-			move = m
+			if move.Flag == 0 {
+				move.Flag = m.Flag
+			}
 			break
 		}
 	}

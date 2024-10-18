@@ -138,3 +138,16 @@ func TestFenAfterPromotionAgain(t *testing.T) {
 		t.Error(compareFenStringErrorMessage(expectedFenString, g.CurrentFen()))
 	}
 }
+
+func TestFenAfterPromotionAgainAgain(t *testing.T) {
+	promotionFen := "r3k2r/8/8/8/8/8/1p6/R3K3 b - - 0 1"
+	g := game.NewGameFromFen(promotionFen)
+
+	g.Move(game.Move{StartSquare: 9, TargetSquare: 0, Flag: game.PromoteToRook})
+
+	expectedFenString := "r3k2r/8/8/8/8/8/8/r3K3 w - - 0 2"
+
+	if g.CurrentFen() != expectedFenString {
+		t.Error(compareFenStringErrorMessage(expectedFenString, g.CurrentFen()))
+	}
+}

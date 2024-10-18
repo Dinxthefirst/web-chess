@@ -216,7 +216,7 @@ function handleSquareClick(index: number) {
     const pieceType = parseInt(pieceElement.dataset.type!);
     const type = pieceType & 7;
     if (type === PieceType.Pawn) {
-      const promotion = prompt("Enter promotion piece: (Q, R, B, N)");
+      const promotion = prompt("Enter promotion piece: (Q, N, R, B)");
       if (promotion === null) {
         return;
       }
@@ -224,17 +224,22 @@ function handleSquareClick(index: number) {
       switch (promotion.toLowerCase()) {
         case "q":
           move.flag = 3;
+          console.log("Promotion to queen");
           break;
         case "n":
           move.flag = 4;
+          console.log("Promotion to knight");
           break;
         case "r":
           move.flag = 5;
+          console.log("Promotion to rook");
           break;
         case "b":
           move.flag = 6;
+          console.log("Promotion to bishop");
           break;
         default:
+          console.log("Invalid promotion piece");
           return;
       }
     }
