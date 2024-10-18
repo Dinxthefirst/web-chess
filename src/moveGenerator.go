@@ -282,7 +282,14 @@ func (g *Game) generatePawnMoves(startSquare int) []Move {
 	}
 
 	if g.Board[targetSquare].pieceType() == None {
-		moves = append(moves, Move{startSquare, targetSquare, NoFlag})
+		if targetSquare/BoardSize == 0 || targetSquare/BoardSize == 7 {
+			moves = append(moves, Move{startSquare, targetSquare, PromoteToQueen})
+			moves = append(moves, Move{startSquare, targetSquare, PromoteToKnight})
+			moves = append(moves, Move{startSquare, targetSquare, PromoteToRook})
+			moves = append(moves, Move{startSquare, targetSquare, PromoteToBishop})
+		} else {
+			moves = append(moves, Move{startSquare, targetSquare, NoFlag})
+		}
 		doubleMoveAllowed := startSquare/BoardSize == 1 && piece.color() == White || startSquare/BoardSize == 6 && piece.color() == Black
 		if doubleMoveAllowed {
 			targetSquare = startSquare + 16*direction

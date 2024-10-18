@@ -42,6 +42,7 @@ func (g *Game) MakeMove(move Move) {
 	if capturedPieceType != None && move.Flag != EnPassantCapture {
 		g.Board[moveTo] = Piece{None}
 	}
+	g.Board[moveTo] = movePiece
 
 	if movePieceType == King {
 		if g.ColorToMove == White {
@@ -93,7 +94,6 @@ func (g *Game) MakeMove(move Move) {
 		g.Board[castlingRookToIndex] = Piece{Rook | g.ColorToMove}
 	}
 
-	g.Board[moveTo] = movePiece
 	g.Board[moveFrom] = Piece{None}
 
 	if move.Flag == PawnTwoForward {

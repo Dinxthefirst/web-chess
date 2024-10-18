@@ -169,6 +169,34 @@ function handleSquareClick(index) {
     if (move === undefined) {
         return;
     }
+    const rank = Math.floor(move.targetSquare / 8);
+    if (rank === 0 || rank === 7) {
+        const pieceElement = document.querySelector(`[data-index='${move.startSquare}']`);
+        const pieceType = parseInt(pieceElement.dataset.type);
+        const type = pieceType & 7;
+        if (type === PieceType.Pawn) {
+            const promotion = prompt("Enter promotion piece: (Q, R, B, N)");
+            if (promotion === null) {
+                return;
+            }
+            switch (promotion.toLowerCase()) {
+                case "q":
+                    move.flag = 3;
+                    break;
+                case "n":
+                    move.flag = 4;
+                    break;
+                case "r":
+                    move.flag = 5;
+                    break;
+                case "b":
+                    move.flag = 6;
+                    break;
+                default:
+                    return;
+            }
+        }
+    }
     console.log("Move:", move);
     sendMoveRequest(move);
     selectedSquares = [];

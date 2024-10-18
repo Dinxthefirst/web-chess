@@ -107,4 +107,21 @@ func TestFenAfterUnmakingManyMoves(t *testing.T) {
 	g.UnmakeMove(game.Move{StartSquare: 6, TargetSquare: 21})  // Nf3
 	g.UnmakeMove(game.Move{StartSquare: 50, TargetSquare: 34}) // c5
 	g.UnmakeMove(game.Move{StartSquare: 12, TargetSquare: 28}) // e4
+
+	if g.CurrentFen() != initialFen {
+		t.Error(compareFenStringErrorMessage(initialFen, g.CurrentFen()))
+	}
+}
+
+func TestFenAfterPromotion(t *testing.T) {
+	promotionFen := "4k3/P7/8/8/8/8/7/4K3 w - - 0 1"
+	g := game.NewGameFromFen(promotionFen)
+
+	g.Move(game.Move{StartSquare: 48, TargetSquare: 56, Flag: game.PromoteToQueen})
+
+	expectedFenString := "Q3k3/8/8/8/8/8/8/4K3 b - - 0 1"
+
+	if g.CurrentFen() != expectedFenString {
+		t.Error(compareFenStringErrorMessage(expectedFenString, g.CurrentFen()))
+	}
 }
