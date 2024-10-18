@@ -131,11 +131,11 @@ func (g *Game) CurrentFen() string {
 	if enPassantFile == 0 {
 		fen += "-"
 	} else {
-		epRank := 5
+		enPassantRank := 5
 		if g.ColorToMove == Black {
-			epRank = 2
+			enPassantRank = 2
 		}
-		fen += toChessNotation(epRank*BoardSize + int(enPassantFile-1))
+		fen += toChessNotation(enPassantRank*BoardSize + int(enPassantFile-1))
 	}
 
 	fen += " "

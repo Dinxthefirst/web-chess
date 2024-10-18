@@ -52,6 +52,7 @@ const PieceImages = {
 ///// FUNCTIONS
 document.addEventListener("DOMContentLoaded", () => {
     setupNewGameButton();
+    setupUndoButton();
 });
 function setupNewGameButton() {
     const newGameButton = document.getElementById("new-game-button");
@@ -67,6 +68,12 @@ function newGame() {
     else {
         startNewGame();
     }
+}
+let moves = [];
+let legalMoves = [];
+function setupUndoButton() {
+    const undoButton = document.getElementById("undo-button");
+    undoButton.addEventListener("click", undoMove);
 }
 const gameContainer = document.getElementById("game-container");
 function renderBoard(game) {
@@ -152,11 +159,16 @@ function handleSquareClick(index) {
         removeHighlight();
         return;
     }
-    selectedSquares[1] = index;
-    const move = {
-        startSquare: selectedSquares[0],
-        targetSquare: selectedSquares[1],
-    };
+    let move;
+    for (let i = 0; i < legalMoves.length; i++) {
+        if (legalMoves[i].targetSquare === index) {
+            move = legalMoves[i];
+            break;
+        }
+    }
+    if (move === undefined) {
+        return;
+    }
     console.log("Move:", move);
     sendMoveRequest(move);
     selectedSquares = [];
@@ -255,8 +267,11 @@ function fetchNewGameFromFen(fen) {
 }
 function sendMoveRequest(move) {
     return __awaiter(this, void 0, void 0, function* () {
+        console.log("Sending move request:", move);
         try {
             yield makeMove(move);
+            moves.push(move);
+            console.log("Moves after send request:", moves);
             const gameState = yield currentGameState();
             renderBoard(gameState);
         }
@@ -292,8 +307,8 @@ function currentGameState() {
 function getLegalMoves(index) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const moves = yield fetchLegalMoves(index);
-            highlightLegalMoves(moves);
+            legalMoves = yield fetchLegalMoves(index);
+            highlightLegalMoves(legalMoves);
         }
         catch (error) {
             console.error("There was a problem with fetching legal moves:", error);
@@ -307,5 +322,35 @@ function fetchLegalMoves(index) {
             throw new Error("Could not fetch legal moves");
         }
         return response.json();
+    });
+}
+function undoMove() {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log("Moves:", moves);
+        try {
+            const move = moves[moves.length - 1];
+            console.log("Undoing move", move);
+            yield fetchUndoMove(move);
+            moves.pop();
+            const gameState = yield currentGameState();
+            renderBoard(gameState);
+        }
+        catch (error) {
+            console.error("There was a problem with undoing the move:", error);
+        }
+    });
+}
+function fetchUndoMove(move) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const response = yield fetch("/undo-move", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(move),
+        });
+        if (!response.ok) {
+            throw new Error("Could not undo move");
+        }
     });
 }

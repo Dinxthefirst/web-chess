@@ -28,6 +28,7 @@ interface Game {
 interface Move {
   startSquare: number;
   targetSquare: number;
+  flag: number;
 }
 
 const PieceImages: { [key in PieceType]?: { [key in Color]: string } } = {
@@ -61,6 +62,7 @@ const PieceImages: { [key in PieceType]?: { [key in Color]: string } } = {
 
 document.addEventListener("DOMContentLoaded", () => {
   setupNewGameButton();
+  setupUndoButton();
 });
 
 function setupNewGameButton() {
@@ -78,6 +80,14 @@ function newGame() {
   } else {
     startNewGame();
   }
+}
+
+let moves: Move[] = [];
+let legalMoves: Move[] = [];
+
+function setupUndoButton() {
+  const undoButton = document.getElementById("undo-button")!;
+  undoButton.addEventListener("click", undoMove);
 }
 
 const gameContainer = document.getElementById("game-container")!;
@@ -187,11 +197,17 @@ function handleSquareClick(index: number) {
     return;
   }
 
-  selectedSquares[1] = index;
-  const move: Move = {
-    startSquare: selectedSquares[0],
-    targetSquare: selectedSquares[1],
-  };
+  let move: Move | undefined;
+  for (let i = 0; i < legalMoves.length; i++) {
+    if (legalMoves[i].targetSquare === index) {
+      move = legalMoves[i];
+      break;
+    }
+  }
+  if (move === undefined) {
+    return;
+  }
+
   console.log("Move:", move);
   sendMoveRequest(move);
   selectedSquares = [];
@@ -297,8 +313,12 @@ async function fetchNewGameFromFen(fen: string): Promise<Game> {
 }
 
 async function sendMoveRequest(move: Move) {
+  console.log("Sending move request:", move);
+
   try {
     await makeMove(move);
+    moves.push(move);
+    console.log("Moves after send request:", moves);
     const gameState = await currentGameState();
     renderBoard(gameState);
   } catch (error) {
@@ -334,8 +354,8 @@ async function currentGameState(): Promise<Game> {
 
 async function getLegalMoves(index: number) {
   try {
-    const moves = await fetchLegalMoves(index);
-    highlightLegalMoves(moves);
+    legalMoves = await fetchLegalMoves(index);
+    highlightLegalMoves(legalMoves);
   } catch (error) {
     console.error("There was a problem with fetching legal moves:", error);
   }
@@ -349,4 +369,33 @@ async function fetchLegalMoves(index: number): Promise<Move[]> {
   }
 
   return response.json();
+}
+
+async function undoMove() {
+  console.log("Moves:", moves);
+
+  try {
+    const move = moves[moves.length - 1];
+    console.log("Undoing move", move);
+    await fetchUndoMove(move);
+    moves.pop();
+    const gameState = await currentGameState();
+    renderBoard(gameState);
+  } catch (error) {
+    console.error("There was a problem with undoing the move:", error);
+  }
+}
+
+async function fetchUndoMove(move: Move) {
+  const response = await fetch("/undo-move", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(move),
+  });
+
+  if (!response.ok) {
+    throw new Error("Could not undo move");
+  }
 }

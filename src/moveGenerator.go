@@ -1,8 +1,6 @@
 package game
 
-import (
-	"strings"
-)
+import "fmt"
 
 var DirectionOffsets = [BoardSize]int{8, -8, 1, -1, 7, -7, 9, -9}
 var KnightOffsets = [8]int{15, 17, 10, 6, -15, -17, -10, -6}
@@ -174,17 +172,35 @@ func (g *Game) generateCastlingMoves(startSquare int) []Move {
 	castlingRights := g.currentGameState & 0b1111
 	if g.ColorToMove == White {
 		if ((castlingRights >> 3) & 1) == 1 {
-			moves = append(moves, Move{startSquare, 6, Castling})
+			bishopMoved := g.Board[fromChessNotation("f1")].pieceType() == None
+			knightMoved := g.Board[fromChessNotation("g1")].pieceType() == None
+			if bishopMoved && knightMoved {
+				moves = append(moves, Move{startSquare, 6, Castling})
+			}
 		}
 		if ((castlingRights >> 2) & 1) == 1 {
-			moves = append(moves, Move{startSquare, 2, Castling})
+			knightMoved := g.Board[fromChessNotation("b1")].pieceType() == None
+			bishopMoved := g.Board[fromChessNotation("c1")].pieceType() == None
+			queenMoved := g.Board[fromChessNotation("d1")].pieceType() == None
+			if knightMoved && bishopMoved && queenMoved {
+				moves = append(moves, Move{startSquare, 2, Castling})
+			}
 		}
 	} else {
 		if ((castlingRights >> 1) & 1) == 1 {
-			moves = append(moves, Move{startSquare, 62, Castling})
+			bishopMoved := g.Board[fromChessNotation("f8")].pieceType() == None
+			knightMoved := g.Board[fromChessNotation("g8")].pieceType() == None
+			if bishopMoved && knightMoved {
+				moves = append(moves, Move{startSquare, 62, Castling})
+			}
 		}
 		if (castlingRights & 1) == 1 {
-			moves = append(moves, Move{startSquare, 58, Castling})
+			knightMoved := g.Board[fromChessNotation("b8")].pieceType() == None
+			bishopMoved := g.Board[fromChessNotation("c8")].pieceType() == None
+			queenMoved := g.Board[fromChessNotation("d8")].pieceType() == None
+			if knightMoved && bishopMoved && queenMoved {
+				moves = append(moves, Move{startSquare, 58, Castling})
+			}
 		}
 	}
 
@@ -201,6 +217,11 @@ func (g *Game) generatePawnMoves(startSquare int) []Move {
 	}
 
 	targetSquare := startSquare + 8*direction
+	if targetSquare < 0 || targetSquare >= BoardSize*BoardSize {
+		fmt.Println("Start square: ", startSquare)
+		fmt.Println(g.CurrentFen())
+	}
+
 	if g.Board[targetSquare].pieceType() == None {
 		moves = append(moves, Move{startSquare, targetSquare, NoFlag})
 		doubleMoveAllowed := startSquare/BoardSize == 1 && piece.color() == White || startSquare/BoardSize == 6 && piece.color() == Black
@@ -211,14 +232,26 @@ func (g *Game) generatePawnMoves(startSquare int) []Move {
 			}
 		}
 	}
+
 	for _, offset := range []int{7, 9} {
 		targetSquare = startSquare + offset*direction
+		if targetSquare < 0 || targetSquare >= BoardSize*BoardSize {
+			continue
+		}
 		if g.Board[targetSquare].color() != piece.color() && g.Board[targetSquare].color() != None {
 			moves = append(moves, Move{startSquare, targetSquare, NoFlag})
 		}
-		splitFen := strings.Split(g.CurrentFen(), " ")
-		enPassantSquare := fromChessNotation(splitFen[3])
-		if enPassantSquare != -1 && targetSquare == enPassantSquare {
+
+		enPassantFile := g.currentGameState >> 4 & 0b111
+		if enPassantFile == 0 {
+			continue
+		}
+		enPassantRank := 5
+		if piece.color() == Black {
+			enPassantRank = 2
+		}
+		enPassantSquare := enPassantRank*BoardSize + int(enPassantFile-1)
+		if targetSquare == enPassantSquare {
 			moves = append(moves, Move{startSquare, targetSquare, EnPassantCapture})
 		}
 	}

@@ -59,6 +59,22 @@ func (h *GameHandler) Move(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(h.game)
 }
 
+func (h *GameHandler) Undo(w http.ResponseWriter, r *http.Request) {
+	var move game.Move
+
+	err := json.NewDecoder(r.Body).Decode(&move)
+	if err != nil {
+		fmt.Printf("Error decoding move: %v\n", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	h.game.UnmakeMove(move)
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(h.game)
+}
+
 func (h *GameHandler) CurrentState(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(h.game)

@@ -56,7 +56,7 @@ const (
 type Move struct {
 	StartSquare  int `json:"startSquare"`
 	TargetSquare int `json:"targetSquare"`
-	flag         int
+	Flag         int `json:"flag"`
 }
 
 type Piece struct {

@@ -1,7 +1,8 @@
 {
     "scripts": {
       "build": "tsc",
-      "start": "tsc && go run main.go"
+      "start": "tsc && go run main.go -server",
+      "perft": "go run main.go -perft 5"
     }
   }
   

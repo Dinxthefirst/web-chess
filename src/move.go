@@ -36,10 +36,10 @@ func (g *Game) MakeMove(move Move) {
 	movePiece := g.Board[moveFrom]
 	movePieceType := movePiece.pieceType()
 
-	isPromotion := move.flag == PromoteToQueen || move.flag == PromoteToKnight || move.flag == PromoteToRook || move.flag == PromoteToBishop
+	isPromotion := move.Flag == PromoteToQueen || move.Flag == PromoteToKnight || move.Flag == PromoteToRook || move.Flag == PromoteToBishop
 
 	currentGameState |= uint32(capturedPieceType) << 8
-	if capturedPieceType != None && move.flag != EnPassantCapture {
+	if capturedPieceType != None && move.Flag != EnPassantCapture {
 		g.Board[moveTo] = Piece{None}
 	}
 
@@ -53,7 +53,7 @@ func (g *Game) MakeMove(move Move) {
 
 	if isPromotion {
 		promoteType := 0
-		switch move.flag {
+		switch move.Flag {
 		case PromoteToQueen:
 			promoteType = Queen
 		case PromoteToKnight:
@@ -64,7 +64,7 @@ func (g *Game) MakeMove(move Move) {
 			promoteType = Bishop
 		}
 		g.Board[moveTo] = Piece{promoteType | g.ColorToMove}
-	} else if move.flag == EnPassantCapture {
+	} else if move.Flag == EnPassantCapture {
 		epPawnSquare := 0
 		if g.ColorToMove == White {
 			epPawnSquare = moveTo - 8
@@ -73,7 +73,7 @@ func (g *Game) MakeMove(move Move) {
 		}
 		currentGameState |= uint32((g.Board[epPawnSquare]).pieceType()) << 8 // add pawn as capture type
 		g.Board[epPawnSquare] = Piece{None}                                  // clear en passant square
-	} else if move.flag == Castling {
+	} else if move.Flag == Castling {
 		kingside := false
 		if g.ColorToMove == White {
 			kingside = moveTo == fromChessNotation("g1")
@@ -96,7 +96,7 @@ func (g *Game) MakeMove(move Move) {
 	g.Board[moveTo] = movePiece
 	g.Board[moveFrom] = Piece{None}
 
-	if move.flag == PawnTwoForward {
+	if move.Flag == PawnTwoForward {
 		enPassantFile := uint32(moveFrom) % 8
 		currentGameState |= (enPassantFile + 1) << 4
 	}
@@ -105,15 +105,18 @@ func (g *Game) MakeMove(move Move) {
 	if originalCastleRights != 0 {
 		if moveTo == fromChessNotation("h1") || moveFrom == fromChessNotation("h1") {
 			newCastleState &= whiteCastleKingsideMask
-		}
-		if moveTo == fromChessNotation("a1") || moveFrom == fromChessNotation("a1") {
+		} else if moveTo == fromChessNotation("a1") || moveFrom == fromChessNotation("a1") {
 			newCastleState &= whiteCastleQueensideMask
-		}
-		if moveTo == fromChessNotation("h8") || moveFrom == fromChessNotation("h8") {
+		} else if moveTo == fromChessNotation("h8") || moveFrom == fromChessNotation("h8") {
 			newCastleState &= blackCastleKingsideMask
-		}
-		if moveTo == fromChessNotation("a8") || moveFrom == fromChessNotation("a8") {
+		} else if moveTo == fromChessNotation("a8") || moveFrom == fromChessNotation("a8") {
 			newCastleState &= blackCastleQueensideMask
+		} else if movePieceType == King {
+			if g.ColorToMove == White {
+				newCastleState &= whiteCastleMask
+			} else {
+				newCastleState &= blackCastleMask
+			}
 		}
 	}
 
@@ -137,18 +140,19 @@ func (g *Game) MakeMove(move Move) {
 }
 
 func (g *Game) UnmakeMove(move Move) {
+	opponentColor := g.ColorToMove
 	g.ColorToMove = g.ColorToMove ^ 0b11000 // color is the color that made the move
 
 	capturedPieceType := (g.currentGameState >> 8) & 0b111111
 	capturedPiece := Piece{None}
 	if capturedPieceType != None {
-		capturedPiece = Piece{int(capturedPieceType) | g.ColorToMove}
+		capturedPiece = Piece{int(capturedPieceType) | opponentColor}
 	}
 
 	movedFrom := move.StartSquare
 	movedTo := move.TargetSquare
 
-	isPromotion := move.flag == PromoteToQueen || move.flag == PromoteToKnight || move.flag == PromoteToRook || move.flag == PromoteToBishop
+	isPromotion := move.Flag == PromoteToQueen || move.Flag == PromoteToKnight || move.Flag == PromoteToRook || move.Flag == PromoteToBishop
 
 	toSquarePieceType := g.Board[movedTo]
 	movedPieceType := toSquarePieceType.pieceType()
@@ -156,14 +160,14 @@ func (g *Game) UnmakeMove(move Move) {
 		movedPieceType = Pawn
 	}
 
-	if capturedPieceType != None && move.flag != EnPassantCapture {
+	if capturedPieceType != None && move.Flag != EnPassantCapture {
 		g.Board[movedTo] = capturedPiece
 	}
 
 	g.Board[movedFrom] = Piece{movedPieceType | g.ColorToMove}
 	g.Board[movedTo] = capturedPiece
 
-	if move.flag == EnPassantCapture {
+	if move.Flag == EnPassantCapture {
 		epPawnSquare := 0
 		if g.ColorToMove == White {
 			epPawnSquare = movedTo - 8
@@ -172,7 +176,7 @@ func (g *Game) UnmakeMove(move Move) {
 		}
 		g.Board[movedTo] = Piece{None}
 		g.Board[epPawnSquare] = capturedPiece
-	} else if move.flag == Castling {
+	} else if move.Flag == Castling {
 		kingside := false
 		if g.ColorToMove == White {
 			kingside = movedTo == fromChessNotation("g1")
