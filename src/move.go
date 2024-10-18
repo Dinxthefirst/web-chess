@@ -7,7 +7,7 @@ func (g *Game) Move(move Move) error {
 		return fmt.Errorf("no piece at %d", move.StartSquare)
 	}
 
-	moves := g.GenerateMoves()
+	moves := g.GenerateLegalMoves()
 	validMove := false
 	for _, m := range moves {
 		if m.StartSquare == move.StartSquare && m.TargetSquare == move.TargetSquare {

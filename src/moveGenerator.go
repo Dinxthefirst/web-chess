@@ -1,6 +1,8 @@
 package game
 
-import "fmt"
+import (
+	"fmt"
+)
 
 var DirectionOffsets = [BoardSize]int{8, -8, 1, -1, 7, -7, 9, -9}
 var KnightOffsets = [8]int{15, 17, 10, 6, -15, -17, -10, -6}
@@ -31,7 +33,7 @@ func precomputedMoveData() {
 }
 
 func (g *Game) LegalMoves(index int) []Move {
-	moves := g.generateMovesForColor(g.ColorToMove)
+	moves := g.GenerateLegalMoves()
 
 	filteredMoves := []Move{}
 	for _, move := range moves {
@@ -42,7 +44,59 @@ func (g *Game) LegalMoves(index int) []Move {
 	return filteredMoves
 }
 
-func (g *Game) GenerateMoves() []Move {
+func (g *Game) GenerateLegalMoves() []Move {
+	moves := g.GeneratePseudoLegalMoves()
+
+	filteredMoves := []Move{}
+	for _, move := range moves {
+		if g.isMoveLegal(move) {
+			filteredMoves = append(filteredMoves, move)
+		}
+	}
+	return filteredMoves
+}
+
+func (g *Game) isMoveLegal(move Move) bool {
+	color := g.ColorToMove
+
+	g.MakeMove(move)
+
+	isKingInCheck := g.isKingInCheck(color)
+
+	g.UnmakeMove(move)
+
+	return !isKingInCheck
+}
+
+func (g *Game) isKingInCheck(color int) bool {
+	kingPosition := g.findKing(color)
+	return g.isSquareAttacked(kingPosition, color)
+}
+
+func (g *Game) findKing(color int) int {
+	for i, piece := range g.Board {
+		if piece.pieceType() == King && piece.color() == color {
+			return i
+		}
+	}
+	return -1 // Should never happen
+}
+
+func (g *Game) isSquareAttacked(square int, color int) bool {
+	opponentColor := Black
+	if color == Black {
+		opponentColor = White
+	}
+
+	for _, move := range g.generateMovesForColor(opponentColor) {
+		if move.TargetSquare == square {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Game) GeneratePseudoLegalMoves() []Move {
 	return g.generateMovesForColor(g.ColorToMove)
 }
 
@@ -145,6 +199,14 @@ func (g *Game) generateKingMoves(startSquare int) []Move {
 		targetSquare := startSquare + offset
 
 		if targetSquare < 0 || targetSquare >= BoardSize*BoardSize {
+			continue
+		}
+
+		file := startSquare % BoardSize
+		movesOfLeftSide := file == 0 && (offset == -1 || offset == -9 || offset == 7)
+		movesOfRightSide := file == BoardSize-1 && (offset == 1 || offset == 9 || offset == -7)
+
+		if movesOfLeftSide || movesOfRightSide {
 			continue
 		}
 

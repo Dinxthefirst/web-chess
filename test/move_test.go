@@ -55,8 +55,26 @@ func TestKingMoves(t *testing.T) {
 	}
 }
 
+func TestKingMovesFromCorner(t *testing.T) {
+	kingFen := "4k3/8/8/8/8/8/8/K6R w - - 0 1"
+
+	g := game.NewGameFromFen(kingFen)
+
+	kingMoves := g.LegalMoves(0)
+
+	expectedMoves := []game.Move{
+		{StartSquare: 0, TargetSquare: 1},
+		{StartSquare: 0, TargetSquare: 8},
+		{StartSquare: 0, TargetSquare: 9},
+	}
+
+	if !movesEqual(expectedMoves, kingMoves) {
+		t.Error(compareMovesErrorMessage(expectedMoves, kingMoves))
+	}
+}
+
 func TestRookMoves(t *testing.T) {
-	rookFen := "4k3/8/8/8/P7/8/8/R2rK3 w - - 0 1"
+	rookFen := "4k3/8/8/8/P7/8/8/R3K3 w - - 0 1"
 
 	g := game.NewGameFromFen(rookFen)
 
@@ -251,6 +269,25 @@ func TestCastling(t *testing.T) {
 		{StartSquare: 4, TargetSquare: 12},
 		{StartSquare: 4, TargetSquare: 13},
 		{StartSquare: 4, TargetSquare: 2},
+	}
+
+	if !movesEqual(expectedMoves, kingMoves) {
+		t.Error(compareMovesErrorMessage(expectedMoves, kingMoves))
+	}
+}
+
+func TestChecking(t *testing.T) {
+	checkingFen := "7k/R7/8/8/8/8/8/K7 w - - 0 1"
+
+	g := game.NewGameFromFen(checkingFen)
+
+	g.Move(game.Move{StartSquare: 48, TargetSquare: 56}) // Ra8
+
+	kingMoves := g.LegalMoves(63)
+
+	expectedMoves := []game.Move{
+		{StartSquare: 63, TargetSquare: 54},
+		{StartSquare: 63, TargetSquare: 55},
 	}
 
 	if !movesEqual(expectedMoves, kingMoves) {
