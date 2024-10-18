@@ -29,6 +29,11 @@ type Game struct {
 	ColorToMove int                          `json:"ColorToMove"`
 	// Bits 0-3: white and black kingside/queen side castling rights
 	//
+	// Bit 0: black queenside,
+	// Bit 1: black kingside,
+	// Bit 2: white queenside,
+	// Bit 3: white kingside
+	//
 	// Bits 4-7: file of en passant square (starting from 1, 0 means no en passant square)
 	//
 	// Bits 8-13: captured piece type

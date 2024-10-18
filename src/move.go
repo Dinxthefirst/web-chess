@@ -113,12 +113,6 @@ func (g *Game) MakeMove(move Move) {
 			newCastleState &= blackCastleKingsideMask
 		} else if moveTo == fromChessNotation("a8") || moveFrom == fromChessNotation("a8") {
 			newCastleState &= blackCastleQueensideMask
-		} else if movePieceType == King {
-			if g.ColorToMove == White {
-				newCastleState &= whiteCastleMask
-			} else {
-				newCastleState &= blackCastleMask
-			}
 		}
 	}
 
@@ -195,7 +189,7 @@ func (g *Game) UnmakeMove(move Move) {
 			castlingRookToIndex = movedTo + 1
 		}
 		g.Board[castlingRookToIndex] = Piece{None}
-		g.Board[castlingRookFromIndex] = g.Board[castlingRookToIndex]
+		g.Board[castlingRookFromIndex] = Piece{Rook | g.ColorToMove}
 	}
 
 	g.gameStateHistory = g.gameStateHistory[:len(g.gameStateHistory)-1]
