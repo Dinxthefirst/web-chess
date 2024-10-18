@@ -312,3 +312,17 @@ func TestChecking(t *testing.T) {
 		t.Error(compareMovesErrorMessage(expectedMoves, kingMoves))
 	}
 }
+
+func TestPin(t *testing.T) {
+	pinFen := "4k3/4r3/8/8/8/8/4N3/4K3 w - - 0 1"
+
+	g := game.NewGameFromFen(pinFen)
+
+	knightMoves := g.LegalMovesAtIndex(12)
+
+	expectedMoves := []game.Move{}
+
+	if !movesEqual(expectedMoves, knightMoves) {
+		t.Error(compareMovesErrorMessage(expectedMoves, knightMoves))
+	}
+}
