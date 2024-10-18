@@ -12,13 +12,16 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: -perft <position> <depth> | -server")
+		fmt.Println("Usage: perft-test | perft <position> <depth> | server")
+		return
 	}
 
 	switch os.Args[1] {
-	case "-perft", "---p":
+	case "perft-test":
+		perft.RunPerftTest()
+	case "perft":
 		if len(os.Args) < 4 {
-			fmt.Println("Usage: -perft <position> <depth>")
+			fmt.Println("Usage: perft <position> <depth>")
 			return
 		}
 		position, err := strconv.Atoi(os.Args[2])
@@ -32,11 +35,11 @@ func main() {
 			return
 		}
 		perft.RunPerft(position, depth)
-	case "-server", "---s":
+	case "server":
 		srv := api.NewServer()
 		fmt.Println("SERVER CREATED")
 		log.Fatal(http.ListenAndServe("127.0.0.1:42069", srv))
 	default:
-		fmt.Println("Usage: -perft <position> <depth> | -server")
+		fmt.Println("Usage: perft-test | perft <position> <depth> | server")
 	}
 }

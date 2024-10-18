@@ -281,8 +281,9 @@ func (g *Game) generatePawnMoves(startSquare int) []Move {
 		fmt.Println(g.CurrentFen())
 	}
 
+	promotionMoveAllowed := startSquare/BoardSize == 6 && piece.color() == White || startSquare/BoardSize == 1 && piece.color() == Black
 	if g.Board[targetSquare].pieceType() == None {
-		if targetSquare/BoardSize == 0 || targetSquare/BoardSize == 7 {
+		if promotionMoveAllowed {
 			moves = append(moves, Move{startSquare, targetSquare, PromoteToQueen})
 			moves = append(moves, Move{startSquare, targetSquare, PromoteToKnight})
 			moves = append(moves, Move{startSquare, targetSquare, PromoteToRook})
@@ -310,7 +311,14 @@ func (g *Game) generatePawnMoves(startSquare int) []Move {
 		}
 
 		if g.Board[targetSquare].color() != piece.color() && g.Board[targetSquare].color() != None {
-			moves = append(moves, Move{startSquare, targetSquare, NoFlag})
+			if promotionMoveAllowed {
+				moves = append(moves, Move{startSquare, targetSquare, PromoteToQueen})
+				moves = append(moves, Move{startSquare, targetSquare, PromoteToKnight})
+				moves = append(moves, Move{startSquare, targetSquare, PromoteToRook})
+				moves = append(moves, Move{startSquare, targetSquare, PromoteToBishop})
+			} else {
+				moves = append(moves, Move{startSquare, targetSquare, NoFlag})
+			}
 		}
 
 		enPassantFile := g.currentGameState >> 4 & 0b111

@@ -6,6 +6,60 @@ import (
 	game "web-chess/src"
 )
 
+var actualResults = map[int]map[int]uint64{
+	1: {
+		0: 1,
+		1: 20,
+		2: 400,
+		3: 8902,
+		4: 197281,
+		5: 4865609,
+		6: 119060324,
+		7: 3195901860,
+		8: 84998978956,
+	},
+	2: {
+		0: 1,
+		1: 48,
+		2: 2039,
+		3: 97862,
+		4: 4085603,
+		5: 193690690,
+	},
+	3: {
+		0: 1,
+		1: 14,
+		2: 191,
+		3: 2812,
+		4: 43238,
+		5: 674624,
+	},
+	4: {
+		0: 1,
+		1: 6,
+		2: 264,
+		3: 9467,
+		4: 422333,
+		5: 15833292,
+	},
+	5: {
+		0: 1,
+		1: 44,
+		2: 1486,
+		3: 62379,
+		4: 2103487,
+		5: 89941194,
+	},
+	6: {
+		0: 1,
+		1: 46,
+		2: 2079,
+		3: 89890,
+		4: 3894594,
+		5: 164075551,
+	},
+}
+
 func perft(g *game.Game, depth int) uint64 {
 	if depth == 0 {
 		return 1
@@ -21,6 +75,15 @@ func perft(g *game.Game, depth int) uint64 {
 	}
 
 	return numPositions
+}
+
+func RunPerftTest() {
+	RunPerft(1, 4)
+	RunPerft(2, 4)
+	RunPerft(3, 4)
+	RunPerft(4, 4)
+	RunPerft(5, 4)
+	RunPerft(6, 4)
 }
 
 // https://www.chessprogramming.org/Perft_Results#Initial_Position
@@ -49,6 +112,12 @@ func RunPerft(position, depth int) {
 		start := time.Now()
 		g := game.NewGameFromFen(fen)
 		numPositions := perft(g, d)
-		fmt.Printf("Depth: %d, Result: %d, Time: %v\n", d, numPositions, time.Since(start))
+		fmt.Printf("Depth: %d, Result: %d, Time: %v", d, numPositions, time.Since(start))
+		actual := actualResults[position][d]
+		if numPositions != actual {
+			fmt.Printf(" - INCORRECT, expected %d\n", actual)
+		} else {
+			fmt.Println()
+		}
 	}
 }
