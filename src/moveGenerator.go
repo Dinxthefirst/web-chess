@@ -7,7 +7,7 @@ import (
 var DirectionOffsets = [BoardSize]int{8, -8, 1, -1, 7, -7, 9, -9}
 var KnightOffsets = [8]int{15, 17, 10, 6, -15, -17, -10, -6}
 
-var NumSquaresToEdge [BoardSize * BoardSize][]int
+var NumSquaresToEdge [BoardSize * BoardSize][8]int
 
 // var opponentAttackMap uint64
 // var opponentAttackMapSliding uint64
@@ -21,7 +21,7 @@ func precomputedMoveData() {
 			numWest := file
 
 			squareIndex := rank*BoardSize + file
-			NumSquaresToEdge[squareIndex] = []int{
+			NumSquaresToEdge[squareIndex] = [8]int{
 				numNorth,
 				numSouth,
 				numEast,

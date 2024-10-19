@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -108,4 +109,15 @@ func createPiece(char rune) Piece {
 		pieceType = King
 	}
 	return Piece{pieceType | color}
+}
+
+func bitboardString(bitboard uint64) string {
+	str := ""
+	for rank := 7; rank >= 0; rank-- {
+		for file := 0; file < 8; file++ {
+			str += fmt.Sprintf("%b", bitboard&(1<<(rank*BoardSize+file))>>(rank*BoardSize+file))
+		}
+		str += "\n"
+	}
+	return str
 }
