@@ -56,6 +56,10 @@ type Game struct {
 	plyCount         uint32
 }
 
+func (g *Game) BitBoards() [8]uint64 {
+	return [8]uint64{g.kingsBitBoard, g.pawnsBitBoard, g.knightsBitBoard, g.bishopsBitBoard, g.rooksBitBoard, g.queensBitBoard, g.whitePiecesBitBoard, g.blackPiecesBitBoard}
+}
+
 const (
 	NoFlag = iota
 	EnPassantCapture
