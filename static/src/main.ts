@@ -178,13 +178,16 @@ let selectedSquares: number[] = [];
 
 function handleSquareClick(index: number) {
   if (selectedSquares.length === 0) {
-    const colorToMove = parseInt(gameContainer.dataset.colorToMove!);
+    const colorToMove: boolean = gameContainer.dataset.colorToMove! === "true";
     const piece = document.querySelector(
       `[data-index='${index}']`
     ) as HTMLElement;
     const pieceType = parseInt(piece.dataset.type!);
     const pieceColor = pieceType & 24;
-    if (pieceColor !== colorToMove) {
+    if (
+      (pieceColor === 16 && colorToMove) ||
+      (pieceColor === 8 && !colorToMove)
+    ) {
       return;
     }
     selectedSquares[0] = index;
