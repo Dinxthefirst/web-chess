@@ -14,13 +14,7 @@ func (g *Game) loadPositionFromFen(fen string) error {
 
 	g.LoadPiecesFromFen(pieces)
 
-	if color == "w" {
-		g.ColorToMove = White
-	} else if color == "b" {
-		g.ColorToMove = Black
-	} else {
-		return fmt.Errorf("invalid color to move")
-	}
+	g.ColorToMove = color == "w"
 
 	var currentGameState uint32 = 0
 	var newCastleState uint32 = 0
@@ -100,7 +94,7 @@ func (g *Game) CurrentFen() string {
 	fen = strings.TrimSuffix(fen, "/")
 
 	fen += " "
-	if g.ColorToMove == White {
+	if g.ColorToMove {
 		fen += "w"
 	} else {
 		fen += "b"
@@ -132,7 +126,7 @@ func (g *Game) CurrentFen() string {
 		fen += "-"
 	} else {
 		enPassantRank := 5
-		if g.ColorToMove == Black {
+		if !g.ColorToMove {
 			enPassantRank = 2
 		}
 		fen += toChessNotation(enPassantRank*BoardSize + int(enPassantFile-1))

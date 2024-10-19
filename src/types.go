@@ -25,8 +25,9 @@ const (
 )
 
 type Game struct {
-	Board       [BoardSize * BoardSize]Piece `json:"board"`
-	ColorToMove int                          `json:"ColorToMove"`
+	Board [BoardSize * BoardSize]Piece `json:"board"`
+	// 1: white, 0: black
+	ColorToMove bool `json:"ColorToMove"`
 	// Bits 0-3: white and black kingside/queen side castling rights
 	//
 	// Bit 0: black queenside,

@@ -9,6 +9,9 @@ var KnightOffsets = [8]int{15, 17, 10, 6, -15, -17, -10, -6}
 
 var NumSquaresToEdge [BoardSize * BoardSize][]int
 
+// var opponentAttackMap uint64
+// var opponentAttackMapSliding uint64
+
 func precomputedMoveData() {
 	for file := 0; file < BoardSize; file++ {
 		for rank := 0; rank < BoardSize; rank++ {
@@ -33,7 +36,7 @@ func precomputedMoveData() {
 }
 
 func (g *Game) LegalMovesAtIndex(index int) []Move {
-	moves := g.LegalMoves()
+	moves := g.GenerateLegalMoves()
 
 	filteredMoves := []Move{}
 	for _, move := range moves {
@@ -42,10 +45,6 @@ func (g *Game) LegalMovesAtIndex(index int) []Move {
 		}
 	}
 	return filteredMoves
-}
-
-func (g *Game) LegalMoves() []Move {
-	return g.GenerateLegalMoves()
 }
 
 func (g *Game) GenerateLegalMoves() []Move {
@@ -73,25 +72,26 @@ func (g *Game) isMoveLegal(move Move) bool {
 	return !isKingInCheck
 }
 
-func (g *Game) isKingInCheck(color int) bool {
+func (g *Game) isKingInCheck(color bool) bool {
 	kingPosition := g.findKing(color)
 	return g.isSquareAttacked(kingPosition, color)
 }
 
-func (g *Game) findKing(color int) int {
+func (g *Game) findKing(color bool) int {
 	for i, piece := range g.Board {
-		if piece.pieceType() == King && piece.color() == color {
+		if piece.pieceType() != King {
+			continue
+		}
+		pieceColor := piece.color()
+		if pieceColor == White && color || pieceColor == Black && !color {
 			return i
 		}
 	}
 	return -1 // Should never happen
 }
 
-func (g *Game) isSquareAttacked(square int, color int) bool {
-	opponentColor := Black
-	if color == Black {
-		opponentColor = White
-	}
+func (g *Game) isSquareAttacked(square int, color bool) bool {
+	opponentColor := !color
 
 	for _, move := range g.generateMovesForColor(opponentColor) {
 		if move.TargetSquare == square {
@@ -105,7 +105,7 @@ func (g *Game) GeneratePseudoLegalMoves() []Move {
 	return g.generateMovesForColor(g.ColorToMove)
 }
 
-func (g *Game) generateMovesForColor(color int) []Move {
+func (g *Game) generateMovesForColor(color bool) []Move {
 	moves := []Move{}
 
 	for startSquare := 0; startSquare < BoardSize*BoardSize; startSquare++ {
@@ -113,7 +113,7 @@ func (g *Game) generateMovesForColor(color int) []Move {
 		if piece.pieceType() == None {
 			continue
 		}
-		if piece.color() != color {
+		if piece.color() == White && !color || piece.color() == Black && color {
 			continue
 		}
 
@@ -229,7 +229,7 @@ func (g *Game) generateCastlingMoves(startSquare int) []Move {
 	}
 
 	castlingRights := g.currentGameState & 0b1111
-	if g.ColorToMove == White {
+	if g.ColorToMove {
 		if ((castlingRights >> 3) & 1) == 1 {
 			bishopMoved := g.Board[fromChessNotation("f1")].pieceType() == None
 			knightMoved := g.Board[fromChessNotation("g1")].pieceType() == None

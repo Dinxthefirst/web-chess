@@ -11,6 +11,9 @@ import (
 )
 
 func main() {
+	// TODO: castling when king moves through checked square
+	// TODO: make bitboards for each piece type
+	// TODO: make bitboards for each color
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: perft-test | perft <position> <depth> | perft-sub <position> <depth> | server")
 		return

@@ -34,6 +34,11 @@ func (g *Game) MakeMove(move Move) {
 	moveFrom := move.StartSquare
 	moveTo := move.TargetSquare
 
+	colorToMove := White
+	if !g.ColorToMove {
+		colorToMove = Black
+	}
+
 	capturedPieceType := g.Board[moveTo].pieceType()
 	movePiece := g.Board[moveFrom]
 	movePieceType := movePiece.pieceType()
@@ -47,7 +52,7 @@ func (g *Game) MakeMove(move Move) {
 	g.Board[moveTo] = movePiece
 
 	if movePieceType == King {
-		if g.ColorToMove == White {
+		if g.ColorToMove {
 			newCastleState &= whiteCastleMask
 		} else {
 			newCastleState &= blackCastleMask
@@ -66,10 +71,10 @@ func (g *Game) MakeMove(move Move) {
 		case PromoteToBishop:
 			promoteType = Bishop
 		}
-		g.Board[moveTo] = Piece{promoteType | g.ColorToMove}
+		g.Board[moveTo] = Piece{promoteType | colorToMove}
 	} else if move.Flag == EnPassantCapture {
 		epPawnSquare := 0
-		if g.ColorToMove == White {
+		if g.ColorToMove {
 			epPawnSquare = moveTo - 8
 		} else {
 			epPawnSquare = moveTo + 8
@@ -78,7 +83,7 @@ func (g *Game) MakeMove(move Move) {
 		g.Board[epPawnSquare] = Piece{None}                                  // clear en passant square
 	} else if move.Flag == Castling {
 		kingside := false
-		if g.ColorToMove == White {
+		if g.ColorToMove {
 			kingside = moveTo == fromChessNotation("g1")
 		} else {
 			kingside = moveTo == fromChessNotation("g8")
@@ -93,7 +98,7 @@ func (g *Game) MakeMove(move Move) {
 			castlingRookToIndex = moveTo + 1
 		}
 		g.Board[castlingRookFromIndex] = Piece{None}
-		g.Board[castlingRookToIndex] = Piece{Rook | g.ColorToMove}
+		g.Board[castlingRookToIndex] = Piece{Rook | colorToMove}
 	}
 
 	g.Board[moveFrom] = Piece{None}
@@ -122,12 +127,11 @@ func (g *Game) MakeMove(move Move) {
 
 	g.gameStateHistory = append(g.gameStateHistory, currentGameState)
 
-	if g.ColorToMove == Black {
+	if !g.ColorToMove {
 		g.plyCount++
-		g.ColorToMove = White
-	} else {
-		g.ColorToMove = Black
 	}
+	g.ColorToMove = !g.ColorToMove
+
 	g.fiftyMoveCounter++
 
 	if movePieceType == Pawn || capturedPieceType != None {
@@ -136,8 +140,14 @@ func (g *Game) MakeMove(move Move) {
 }
 
 func (g *Game) UnmakeMove(move Move) {
-	opponentColor := g.ColorToMove
-	g.ColorToMove = g.ColorToMove ^ 0b11000 // color is the color that made the move
+	g.ColorToMove = !g.ColorToMove // color is the color that made the move
+
+	colorToMove := White
+	opponentColor := Black
+	if !g.ColorToMove {
+		colorToMove = Black
+		opponentColor = White
+	}
 
 	capturedPieceType := (g.currentGameState >> 8) & 0b111111
 	capturedPiece := Piece{None}
@@ -160,12 +170,12 @@ func (g *Game) UnmakeMove(move Move) {
 		g.Board[movedTo] = capturedPiece
 	}
 
-	g.Board[movedFrom] = Piece{movedPieceType | g.ColorToMove}
+	g.Board[movedFrom] = Piece{movedPieceType | colorToMove}
 	g.Board[movedTo] = capturedPiece
 
 	if move.Flag == EnPassantCapture {
 		epPawnSquare := 0
-		if g.ColorToMove == White {
+		if g.ColorToMove {
 			epPawnSquare = movedTo - 8
 		} else {
 			epPawnSquare = movedTo + 8
@@ -174,7 +184,7 @@ func (g *Game) UnmakeMove(move Move) {
 		g.Board[epPawnSquare] = capturedPiece
 	} else if move.Flag == Castling {
 		kingside := false
-		if g.ColorToMove == White {
+		if g.ColorToMove {
 			kingside = movedTo == fromChessNotation("g1")
 		} else {
 			kingside = movedTo == fromChessNotation("g8")
@@ -189,7 +199,7 @@ func (g *Game) UnmakeMove(move Move) {
 			castlingRookToIndex = movedTo + 1
 		}
 		g.Board[castlingRookToIndex] = Piece{None}
-		g.Board[castlingRookFromIndex] = Piece{Rook | g.ColorToMove}
+		g.Board[castlingRookFromIndex] = Piece{Rook | colorToMove}
 	}
 
 	g.gameStateHistory = g.gameStateHistory[:len(g.gameStateHistory)-1]
@@ -197,7 +207,7 @@ func (g *Game) UnmakeMove(move Move) {
 
 	g.fiftyMoveCounter = (currentGameState >> 14) & 0b111111
 
-	if g.ColorToMove == Black {
+	if !g.ColorToMove {
 		g.plyCount--
 	}
 
