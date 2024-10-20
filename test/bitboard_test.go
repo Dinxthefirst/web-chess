@@ -17,7 +17,7 @@ func bitboardString(bitboard uint64) string {
 	return str
 }
 
-func bitboardsEqual(bitboards1, bitboards2 [8]uint64) ([]int, bool) {
+func bitboardsEqual(bitboards1, bitboards2 [23]uint64) ([]int, bool) {
 	equal := true
 	indices := []int{}
 	for i := 0; i < 8; i++ {
@@ -29,30 +29,33 @@ func bitboardsEqual(bitboards1, bitboards2 [8]uint64) ([]int, bool) {
 	return indices, equal
 }
 
-func handleBitBoardMismatch(bitboards [8]uint64, bitboardsAfter [8]uint64, indices []int, t *testing.T) {
+func handleBitBoardMismatch(bitboards [23]uint64, bitboardsAfter [23]uint64, indices []int, t *testing.T) {
 	errorString := ""
-	for _, i := range indices {
+	for i := range indices {
 		bitboardStr := bitboardString(bitboards[i])
 		bitboardAfterStr := bitboardString(bitboardsAfter[i])
-		if i == 0 {
-			errorString += fmt.Sprintf("\nKings Bitboards not equal:\n%s!=\n%s", bitboardStr, bitboardAfterStr)
-		} else if i == 1 {
-			errorString += fmt.Sprintf("\nPawns Bitboards not equal:\n%s!=\n%s", bitboardStr, bitboardAfterStr)
-		} else if i == 2 {
-			errorString += fmt.Sprintf("\nKnights Bitboards not equal:\n%s!=\n%s", bitboardStr, bitboardAfterStr)
-		} else if i == 3 {
-			errorString += fmt.Sprintf("\nBishops Bitboards not equal:\n%s!=\n%s", bitboardStr, bitboardAfterStr)
-		} else if i == 4 {
-			errorString += fmt.Sprintf("\nRooks Bitboards not equal:\n%s!=\n%s", bitboardStr, bitboardAfterStr)
-		} else if i == 5 {
-			errorString += fmt.Sprintf("\nQueens Bitboards not equal:\n%s!=\n%s", bitboardStr, bitboardAfterStr)
-		} else if i == 6 {
-			errorString += fmt.Sprintf("\nWhite Pieces Bitboards not equal:\n%s!=\n%s", bitboardStr, bitboardAfterStr)
-		} else if i == 7 {
-			errorString += fmt.Sprintf("\nBlack Pieces Bitboards not equal:\n%s!=\n%s", bitboardStr, bitboardAfterStr)
-		}
+		errorString += fmt.Sprintf("\nBitboard[%d] not equal:\n%s!=\n%s", i, bitboardStr, bitboardAfterStr)
 	}
 	t.Error(errorString)
+}
+
+func TestBitBoardMakingMove(t *testing.T) {
+	g := game.NewGame()
+
+	move := game.Move{StartSquare: 8, TargetSquare: 16}
+	g.Move(move)
+
+	bitboards := g.BitBoards()
+
+	g = game.NewGameFromFen("rnbqkbnr/pppppppp/8/8/8/P7/1PPPPPPP/RNBQKBNR w KQkq - 0 1")
+
+	bitboardsAfter := g.BitBoards()
+
+	indices, equal := bitboardsEqual(bitboards, bitboardsAfter)
+	if !equal {
+		handleBitBoardMismatch(bitboards, bitboardsAfter, indices, t)
+	}
+
 }
 
 func TestBitBoardAfterOneMove(t *testing.T) {

@@ -27,6 +27,7 @@ func (g *Game) Move(move Move) error {
 }
 
 func (g *Game) MakeMove(move Move) {
+	g.updateBitboardsWithMove(move)
 	var currentGameState uint32 = 0
 	originalCastleRights := g.currentGameState & 15
 	newCastleState := originalCastleRights
@@ -72,7 +73,7 @@ func (g *Game) MakeMove(move Move) {
 			promoteType = Bishop
 		}
 		movePieceType = promoteType
-		g.pawnsBitBoard &= ^(1 << moveFrom)
+		// g.pawnsBitBoard &= ^(1 << moveFrom)
 		movePiece = Piece{promoteType | colorToMove}
 	} else if move.Flag == EnPassantCapture {
 		epPawnSquare := 0
@@ -85,18 +86,18 @@ func (g *Game) MakeMove(move Move) {
 		g.Board[epPawnSquare] = Piece{None}                                  // clear en passant square
 		// fmt.Printf("Pawns Bitboard before:\n%s", bitboardString(g.pawnsBitBoard))
 		// fmt.Printf("En Passant mask:\n%s", bitboardString(^(1 << epPawnSquare)))
-		g.pawnsBitBoard &= ^(1 << epPawnSquare) // Removes captured pawn
-		g.pawnsBitBoard &= ^(1 << moveFrom)     // Removes moving pawn from original square
-		g.pawnsBitBoard |= 1 << moveTo          // Adds moving pawn to new square
-		if g.ColorToMove {                      // white moved and captured black pawn
-			g.blackPiecesBitBoard &= ^(1 << epPawnSquare)
-			g.whitePiecesBitBoard &= ^(1 << moveFrom)
-			g.whitePiecesBitBoard |= 1 << moveTo
-		} else {
-			g.whitePiecesBitBoard &= ^(1 << epPawnSquare)
-			g.blackPiecesBitBoard &= ^(1 << moveFrom)
-			g.blackPiecesBitBoard |= 1 << moveTo
-		}
+		// g.pawnsBitBoard &= ^(1 << epPawnSquare) // Removes captured pawn
+		// g.pawnsBitBoard &= ^(1 << moveFrom)     // Removes moving pawn from original square
+		// g.pawnsBitBoard |= 1 << moveTo          // Adds moving pawn to new square
+		// if g.ColorToMove {                      // white moved and captured black pawn
+		// 	g.blackPiecesBitBoard &= ^(1 << epPawnSquare)
+		// 	g.whitePiecesBitBoard &= ^(1 << moveFrom)
+		// 	g.whitePiecesBitBoard |= 1 << moveTo
+		// } else {
+		// 	g.whitePiecesBitBoard &= ^(1 << epPawnSquare)
+		// 	g.blackPiecesBitBoard &= ^(1 << moveFrom)
+		// 	g.blackPiecesBitBoard |= 1 << moveTo
+		// }
 		// fmt.Printf("Pawns Bitboard after:\n%s", bitboardString(g.pawnsBitBoard))
 	} else if move.Flag == Castling {
 		kingside := false
@@ -116,51 +117,51 @@ func (g *Game) MakeMove(move Move) {
 		}
 		g.Board[castlingRookFromIndex] = Piece{None}
 		g.Board[castlingRookToIndex] = Piece{Rook | colorToMove}
-		g.rooksBitBoard &= ^(1 << castlingRookFromIndex)
-		g.rooksBitBoard |= 1 << castlingRookToIndex
-		if g.ColorToMove {
-			g.whitePiecesBitBoard &= ^(1 << castlingRookFromIndex)
-			g.whitePiecesBitBoard |= 1 << castlingRookToIndex
-		} else {
-			g.blackPiecesBitBoard &= ^(1 << castlingRookFromIndex)
-			g.blackPiecesBitBoard |= 1 << castlingRookToIndex
-		}
+		// g.rooksBitBoard &= ^(1 << castlingRookFromIndex)
+		// g.rooksBitBoard |= 1 << castlingRookToIndex
+		// if g.ColorToMove {
+		// 	g.whitePiecesBitBoard &= ^(1 << castlingRookFromIndex)
+		// 	g.whitePiecesBitBoard |= 1 << castlingRookToIndex
+		// } else {
+		// 	g.blackPiecesBitBoard &= ^(1 << castlingRookFromIndex)
+		// 	g.blackPiecesBitBoard |= 1 << castlingRookToIndex
+		// }
 	}
 
 	g.Board[moveTo] = movePiece
 	g.Board[moveFrom] = Piece{None}
 
-	switch movePieceType {
-	case King:
-		g.kingsBitBoard &= ^(1 << moveFrom)
-		g.kingsBitBoard |= 1 << moveTo
-	case Pawn:
-		if move.Flag != EnPassantCapture {
-			g.pawnsBitBoard &= ^(1 << moveFrom)
-			g.pawnsBitBoard |= 1 << moveTo
-		}
-	case Knight:
-		g.knightsBitBoard &= ^(1 << moveFrom)
-		g.knightsBitBoard |= 1 << moveTo
-	case Bishop:
-		g.bishopsBitBoard &= ^(1 << moveFrom)
-		g.bishopsBitBoard |= 1 << moveTo
-	case Rook:
-		g.rooksBitBoard &= ^(1 << moveFrom)
-		g.rooksBitBoard |= 1 << moveTo
-	case Queen:
-		g.queensBitBoard &= ^(1 << moveFrom)
-		g.queensBitBoard |= 1 << moveTo
-	}
-	if move.Flag != EnPassantCapture {
-		if colorToMove == White {
-			g.whitePiecesBitBoard &= ^(1 << moveFrom)
-			g.whitePiecesBitBoard |= 1 << moveTo
-		} else {
-			g.blackPiecesBitBoard &= ^(1 << moveFrom)
-			g.blackPiecesBitBoard |= 1 << moveTo
-		}
-	}
+	// switch movePieceType {
+	// case King:
+	// 	g.kingsBitBoard &= ^(1 << moveFrom)
+	// 	g.kingsBitBoard |= 1 << moveTo
+	// case Pawn:
+	// 	if move.Flag != EnPassantCapture {
+	// 		g.pawnsBitBoard &= ^(1 << moveFrom)
+	// 		g.pawnsBitBoard |= 1 << moveTo
+	// 	}
+	// case Knight:
+	// 	g.knightsBitBoard &= ^(1 << moveFrom)
+	// 	g.knightsBitBoard |= 1 << moveTo
+	// case Bishop:
+	// 	g.bishopsBitBoard &= ^(1 << moveFrom)
+	// 	g.bishopsBitBoard |= 1 << moveTo
+	// case Rook:
+	// 	g.rooksBitBoard &= ^(1 << moveFrom)
+	// 	g.rooksBitBoard |= 1 << moveTo
+	// case Queen:
+	// 	g.queensBitBoard &= ^(1 << moveFrom)
+	// 	g.queensBitBoard |= 1 << moveTo
+	// }
+	// if move.Flag != EnPassantCapture {
+	// 	if colorToMove == White {
+	// 		g.whitePiecesBitBoard &= ^(1 << moveFrom)
+	// 		g.whitePiecesBitBoard |= 1 << moveTo
+	// 	} else {
+	// 		g.blackPiecesBitBoard &= ^(1 << moveFrom)
+	// 		g.blackPiecesBitBoard |= 1 << moveTo
+	// 	}
+	// }
 
 	if move.Flag == PawnTwoForward {
 		enPassantFile := uint32(moveFrom) % 8
@@ -223,16 +224,16 @@ func (g *Game) UnmakeMove(move Move) {
 	movedPieceType := toSquarePieceType.pieceType()
 	if isPromotion {
 		movedPieceType = Pawn
-		switch move.Flag {
-		case PromoteToQueen:
-			g.queensBitBoard &= ^(1 << movedTo)
-		case PromoteToKnight:
-			g.knightsBitBoard &= ^(1 << movedTo)
-		case PromoteToRook:
-			g.rooksBitBoard &= ^(1 << movedTo)
-		case PromoteToBishop:
-			g.bishopsBitBoard &= ^(1 << movedTo)
-		}
+		// switch move.Flag {
+		// case PromoteToQueen:
+		// 	g.queensBitBoard &= ^(1 << movedTo)
+		// case PromoteToKnight:
+		// 	g.knightsBitBoard &= ^(1 << movedTo)
+		// case PromoteToRook:
+		// 	g.rooksBitBoard &= ^(1 << movedTo)
+		// case PromoteToBishop:
+		// 	g.bishopsBitBoard &= ^(1 << movedTo)
+		// }
 	}
 
 	// if capturedPieceType != None && move.Flag != EnPassantCapture {
@@ -254,18 +255,18 @@ func (g *Game) UnmakeMove(move Move) {
 		// fmt.Printf("\nUnmaking en passant\n")
 		// fmt.Printf("Pawns Bitboard:\n%s", bitboardString(g.pawnsBitBoard))
 		// fmt.Printf("En Passant mask:\n%s", bitboardString(^(1 << epPawnSquare)))
-		g.pawnsBitBoard |= 1 << epPawnSquare // Adds captured pawn
-		g.pawnsBitBoard |= 1 << movedFrom    // Adds moving pawn back to original square
-		g.pawnsBitBoard &= ^(1 << movedTo)   // Removes moving pawn from new square
-		if g.ColorToMove {                   // white moved and captured black pawn
-			g.blackPiecesBitBoard |= 1 << epPawnSquare
-			g.whitePiecesBitBoard |= 1 << movedFrom
-			g.whitePiecesBitBoard &= ^(1 << movedTo)
-		} else {
-			g.whitePiecesBitBoard |= 1 << epPawnSquare
-			g.blackPiecesBitBoard |= 1 << movedFrom
-			g.blackPiecesBitBoard &= ^(1 << movedTo)
-		}
+		// g.pawnsBitBoard |= 1 << epPawnSquare // Adds captured pawn
+		// g.pawnsBitBoard |= 1 << movedFrom    // Adds moving pawn back to original square
+		// g.pawnsBitBoard &= ^(1 << movedTo)   // Removes moving pawn from new square
+		// if g.ColorToMove {                   // white moved and captured black pawn
+		// 	g.blackPiecesBitBoard |= 1 << epPawnSquare
+		// 	g.whitePiecesBitBoard |= 1 << movedFrom
+		// 	g.whitePiecesBitBoard &= ^(1 << movedTo)
+		// } else {
+		// 	g.whitePiecesBitBoard |= 1 << epPawnSquare
+		// 	g.blackPiecesBitBoard |= 1 << movedFrom
+		// 	g.blackPiecesBitBoard &= ^(1 << movedTo)
+		// }
 		// fmt.Printf("Pawns Bitboard after:\n%s", bitboardString(g.pawnsBitBoard))
 	} else if move.Flag == Castling {
 		kingside := false
@@ -285,69 +286,69 @@ func (g *Game) UnmakeMove(move Move) {
 		}
 		g.Board[castlingRookToIndex] = Piece{None}
 		g.Board[castlingRookFromIndex] = Piece{Rook | colorToMove}
-		g.rooksBitBoard |= 1 << castlingRookFromIndex
-		g.rooksBitBoard &= ^(1 << castlingRookToIndex)
-		if g.ColorToMove {
-			g.whitePiecesBitBoard |= 1 << castlingRookFromIndex
-			g.whitePiecesBitBoard &= ^(1 << castlingRookToIndex)
-		} else {
-			g.blackPiecesBitBoard |= 1 << castlingRookFromIndex
-			g.blackPiecesBitBoard &= ^(1 << castlingRookToIndex)
-		}
+		// g.rooksBitBoard |= 1 << castlingRookFromIndex
+		// g.rooksBitBoard &= ^(1 << castlingRookToIndex)
+		// if g.ColorToMove {
+		// 	g.whitePiecesBitBoard |= 1 << castlingRookFromIndex
+		// 	g.whitePiecesBitBoard &= ^(1 << castlingRookToIndex)
+		// } else {
+		// 	g.blackPiecesBitBoard |= 1 << castlingRookFromIndex
+		// 	g.blackPiecesBitBoard &= ^(1 << castlingRookToIndex)
+		// }
 	}
 
-	switch movedPieceType {
-	case King:
-		g.kingsBitBoard |= 1 << movedFrom
-		g.kingsBitBoard &= ^(1 << movedTo)
-	case Pawn:
-		if move.Flag != EnPassantCapture {
-			g.pawnsBitBoard |= 1 << movedFrom
-			g.pawnsBitBoard &= ^(1 << movedTo)
-		}
-	case Knight:
-		g.knightsBitBoard |= 1 << movedFrom
-		g.knightsBitBoard &= ^(1 << movedTo)
-	case Bishop:
-		g.bishopsBitBoard |= 1 << movedFrom
-		g.bishopsBitBoard &= ^(1 << movedTo)
-	case Rook:
-		g.rooksBitBoard |= 1 << movedFrom
-		g.rooksBitBoard &= ^(1 << movedTo)
-	case Queen:
-		g.queensBitBoard |= 1 << movedFrom
-		g.queensBitBoard &= ^(1 << movedTo)
-	}
-	if move.Flag != EnPassantCapture {
-		if colorToMove == White {
-			g.whitePiecesBitBoard |= 1 << movedFrom
-			g.whitePiecesBitBoard &= ^(1 << movedTo)
-		} else {
-			g.blackPiecesBitBoard |= 1 << movedFrom
-			g.blackPiecesBitBoard &= ^(1 << movedTo)
-		}
-	}
-	switch capturedPieceType {
-	case Pawn:
-		if move.Flag != EnPassantCapture {
-			g.pawnsBitBoard |= 1 << movedTo
-		}
-	case Knight:
-		g.knightsBitBoard |= 1 << movedTo
-	case Bishop:
-		g.bishopsBitBoard |= 1 << movedTo
-	case Rook:
-		g.rooksBitBoard |= 1 << movedTo
-	case Queen:
-		g.queensBitBoard |= 1 << movedTo
-	}
-	if capturedPieceType != None {
-		if colorToMove == White {
-			g.blackPiecesBitBoard |= 1 << movedTo
-		} else {
-			g.whitePiecesBitBoard |= 1 << movedTo
-		}
-	}
+	// switch movedPieceType {
+	// case King:
+	// 	g.kingsBitBoard |= 1 << movedFrom
+	// 	g.kingsBitBoard &= ^(1 << movedTo)
+	// case Pawn:
+	// 	if move.Flag != EnPassantCapture {
+	// 		g.pawnsBitBoard |= 1 << movedFrom
+	// 		g.pawnsBitBoard &= ^(1 << movedTo)
+	// 	}
+	// case Knight:
+	// 	g.knightsBitBoard |= 1 << movedFrom
+	// 	g.knightsBitBoard &= ^(1 << movedTo)
+	// case Bishop:
+	// 	g.bishopsBitBoard |= 1 << movedFrom
+	// 	g.bishopsBitBoard &= ^(1 << movedTo)
+	// case Rook:
+	// 	g.rooksBitBoard |= 1 << movedFrom
+	// 	g.rooksBitBoard &= ^(1 << movedTo)
+	// case Queen:
+	// 	g.queensBitBoard |= 1 << movedFrom
+	// 	g.queensBitBoard &= ^(1 << movedTo)
+	// }
+	// if move.Flag != EnPassantCapture {
+	// 	if colorToMove == White {
+	// 		g.whitePiecesBitBoard |= 1 << movedFrom
+	// 		g.whitePiecesBitBoard &= ^(1 << movedTo)
+	// 	} else {
+	// 		g.blackPiecesBitBoard |= 1 << movedFrom
+	// 		g.blackPiecesBitBoard &= ^(1 << movedTo)
+	// 	}
+	// }
+	// switch capturedPieceType {
+	// case Pawn:
+	// 	if move.Flag != EnPassantCapture {
+	// 		g.pawnsBitBoard |= 1 << movedTo
+	// 	}
+	// case Knight:
+	// 	g.knightsBitBoard |= 1 << movedTo
+	// case Bishop:
+	// 	g.bishopsBitBoard |= 1 << movedTo
+	// case Rook:
+	// 	g.rooksBitBoard |= 1 << movedTo
+	// case Queen:
+	// 	g.queensBitBoard |= 1 << movedTo
+	// }
+	// if capturedPieceType != None {
+	// 	if colorToMove == White {
+	// 		g.blackPiecesBitBoard |= 1 << movedTo
+	// 	} else {
+	// 		g.whitePiecesBitBoard |= 1 << movedTo
+	// 	}
+	// }
 
 	g.gameStateHistory = g.gameStateHistory[:len(g.gameStateHistory)-1]
 	currentGameState := g.gameStateHistory[len(g.gameStateHistory)-1]
@@ -360,3 +361,19 @@ func (g *Game) UnmakeMove(move Move) {
 
 	g.currentGameState = currentGameState
 }
+
+func (g *Game) updateBitboardsWithMove(move Move) {
+	pieceToMove := g.Board[move.StartSquare].Type
+	pieceToCapture := g.Board[move.TargetSquare].Type
+
+	g.bitboards[pieceToMove] ^= 1<<move.StartSquare | 1<<move.TargetSquare
+	if pieceToCapture != None {
+		g.bitboards[pieceToCapture] ^= 1 << move.TargetSquare
+	}
+	fmt.Println(g.BitBoards())
+}
+
+// func (g *Game) undoBitboardsWithMove(move Move) {
+// 	pieceMoved := g.Board[move.TargetSquare].Type
+
+// }
