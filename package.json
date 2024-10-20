@@ -1,7 +1,6 @@
 {
-    "scripts": {
-      "build": "tsc",
-      "start": "tsc && go run main.go server"
-    }
+  "scripts": {
+    "build": "cd frontend && npm run build",
+    "start": "npm run build && go build && ./web-chess server"
   }
-  
+}
