@@ -11,6 +11,10 @@ var NumSquaresToEdge [BoardSize * BoardSize][8]int
 
 // var opponentAttackMap uint64
 // var opponentAttackMapSliding uint64
+var whiteKingsideAttacked bool
+var whiteQueensideAttacked bool
+var blackKingsideAttacked bool
+var blackQueensideAttacked bool
 
 func precomputedMoveData() {
 	for file := 0; file < BoardSize; file++ {
@@ -93,7 +97,7 @@ func (g *Game) findKing(color bool) int {
 func (g *Game) isSquareAttacked(square int, color bool) bool {
 	opponentColor := !color
 
-	for _, move := range g.generateMovesForColor(opponentColor) {
+	for _, move := range g.generateMovesForColor(opponentColor, true) {
 		if move.TargetSquare == square {
 			return true
 		}
@@ -102,10 +106,10 @@ func (g *Game) isSquareAttacked(square int, color bool) bool {
 }
 
 func (g *Game) GeneratePseudoLegalMoves() []Move {
-	return g.generateMovesForColor(g.ColorToMove)
+	return g.generateMovesForColor(g.ColorToMove, false)
 }
 
-func (g *Game) generateMovesForColor(color bool) []Move {
+func (g *Game) generateMovesForColor(color bool, inSearch bool) []Move {
 	moves := []Move{}
 
 	for startSquare := 0; startSquare < BoardSize*BoardSize; startSquare++ {
@@ -119,7 +123,7 @@ func (g *Game) generateMovesForColor(color bool) []Move {
 
 		switch piece.pieceType() {
 		case King:
-			moves = append(moves, g.generateKingMoves(startSquare)...)
+			moves = append(moves, g.generateKingMoves(startSquare, inSearch)...)
 		case Pawn:
 			moves = append(moves, g.generatePawnMoves(startSquare)...)
 		case Knight:
@@ -196,7 +200,7 @@ func (g *Game) generateKnightMoves(startSquare int) []Move {
 	return moves
 }
 
-func (g *Game) generateKingMoves(startSquare int) []Move {
+func (g *Game) generateKingMoves(startSquare int, inSearch bool) []Move {
 	piece := g.Board[startSquare]
 
 	moves := []Move{}
@@ -216,13 +220,18 @@ func (g *Game) generateKingMoves(startSquare int) []Move {
 		moves = append(moves, Move{startSquare, targetSquare, NoFlag})
 	}
 
-	moves = append(moves, g.generateCastlingMoves(startSquare)...)
+	moves = append(moves, g.generateCastlingMoves(startSquare, inSearch)...)
 
 	return moves
 }
 
-func (g *Game) generateCastlingMoves(startSquare int) []Move {
+func (g *Game) generateCastlingMoves(startSquare int, inSearch bool) []Move {
 	moves := []Move{}
+
+	if inSearch {
+		return moves
+	}
+	g.generateCastleAttackedSquares()
 
 	if g.currentGameState&0b1111 == 0 {
 		return moves
@@ -234,7 +243,9 @@ func (g *Game) generateCastlingMoves(startSquare int) []Move {
 			bishopMoved := g.Board[fromChessNotation("f1")].pieceType() == None
 			knightMoved := g.Board[fromChessNotation("g1")].pieceType() == None
 			if bishopMoved && knightMoved {
-				moves = append(moves, Move{startSquare, 6, Castling})
+				if !whiteKingsideAttacked {
+					moves = append(moves, Move{startSquare, 6, Castling})
+				}
 			}
 		}
 		if ((castlingRights >> 2) & 1) == 1 {
@@ -242,7 +253,9 @@ func (g *Game) generateCastlingMoves(startSquare int) []Move {
 			bishopMoved := g.Board[fromChessNotation("c1")].pieceType() == None
 			queenMoved := g.Board[fromChessNotation("d1")].pieceType() == None
 			if knightMoved && bishopMoved && queenMoved {
-				moves = append(moves, Move{startSquare, 2, Castling})
+				if !whiteQueensideAttacked {
+					moves = append(moves, Move{startSquare, 2, Castling})
+				}
 			}
 		}
 	} else {
@@ -250,7 +263,9 @@ func (g *Game) generateCastlingMoves(startSquare int) []Move {
 			bishopMoved := g.Board[fromChessNotation("f8")].pieceType() == None
 			knightMoved := g.Board[fromChessNotation("g8")].pieceType() == None
 			if bishopMoved && knightMoved {
-				moves = append(moves, Move{startSquare, 62, Castling})
+				if !blackKingsideAttacked {
+					moves = append(moves, Move{startSquare, 62, Castling})
+				}
 			}
 		}
 		if (castlingRights & 1) == 1 {
@@ -258,12 +273,39 @@ func (g *Game) generateCastlingMoves(startSquare int) []Move {
 			bishopMoved := g.Board[fromChessNotation("c8")].pieceType() == None
 			queenMoved := g.Board[fromChessNotation("d8")].pieceType() == None
 			if knightMoved && bishopMoved && queenMoved {
-				moves = append(moves, Move{startSquare, 58, Castling})
+				if !blackQueensideAttacked {
+					moves = append(moves, Move{startSquare, 58, Castling})
+				}
 			}
 		}
 	}
 
 	return moves
+}
+
+func (g *Game) generateCastleAttackedSquares() {
+	opponentColor := !g.ColorToMove
+
+	whiteKingsideAttacked = false
+	whiteQueensideAttacked = false
+	blackKingsideAttacked = false
+	blackQueensideAttacked = false
+
+	for _, move := range g.generateMovesForColor(opponentColor, true) {
+		if whiteKingsideAttacked && whiteQueensideAttacked && blackKingsideAttacked && blackQueensideAttacked {
+			return
+		}
+
+		if move.TargetSquare == 5 {
+			whiteKingsideAttacked = true
+		} else if move.TargetSquare == 3 {
+			whiteQueensideAttacked = true
+		} else if move.TargetSquare == 61 {
+			blackKingsideAttacked = true
+		} else if move.TargetSquare == 59 {
+			blackQueensideAttacked = true
+		}
+	}
 }
 
 func (g *Game) generatePawnMoves(startSquare int) []Move {

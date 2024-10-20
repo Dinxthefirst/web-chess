@@ -62,7 +62,7 @@ func (g *Game) LoadPiecesFromFen(fen string) {
 		}
 		index := rank*BoardSize + file
 		g.Board[index] = createPiece(char)
-		g.updateBitboards(index, char)
+		// g.updateBitboards(index, char)
 		file++
 	}
 	// print bitboards
@@ -84,27 +84,27 @@ func (g *Game) LoadPiecesFromFen(fen string) {
 	// fmt.Println(bitboardString(g.queensBitBoard))
 }
 
-func (g *Game) updateBitboards(index int, char rune) {
-	switch char {
-	case 'P', 'p':
-		g.pawnsBitBoard |= 1 << index
-	case 'R', 'r':
-		g.rooksBitBoard |= 1 << index
-	case 'N', 'n':
-		g.knightsBitBoard |= 1 << index
-	case 'B', 'b':
-		g.bishopsBitBoard |= 1 << index
-	case 'Q', 'q':
-		g.queensBitBoard |= 1 << index
-	case 'K', 'k':
-		g.kingsBitBoard |= 1 << index
-	}
-	if char >= 'A' && char <= 'Z' {
-		g.whitePiecesBitBoard |= 1 << index
-	} else {
-		g.blackPiecesBitBoard |= 1 << index
-	}
-}
+// func (g *Game) updateBitboards(index int, char rune) {
+// 	switch char {
+// 	case 'P', 'p':
+// 		g.pawnsBitBoard |= 1 << index
+// 	case 'R', 'r':
+// 		g.rooksBitBoard |= 1 << index
+// 	case 'N', 'n':
+// 		g.knightsBitBoard |= 1 << index
+// 	case 'B', 'b':
+// 		g.bishopsBitBoard |= 1 << index
+// 	case 'Q', 'q':
+// 		g.queensBitBoard |= 1 << index
+// 	case 'K', 'k':
+// 		g.kingsBitBoard |= 1 << index
+// 	}
+// 	if char >= 'A' && char <= 'Z' {
+// 		g.whitePiecesBitBoard |= 1 << index
+// 	} else {
+// 		g.blackPiecesBitBoard |= 1 << index
+// 	}
+// }
 
 func (g *Game) CurrentFen() string {
 	fen := ""
