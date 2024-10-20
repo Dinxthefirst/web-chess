@@ -7,7 +7,7 @@ import (
 	"os"
 	"strconv"
 	"web-chess/api"
-	"web-chess/perft"
+	"web-chess/test/perft"
 )
 
 func main() {
