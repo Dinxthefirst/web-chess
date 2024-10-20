@@ -27,7 +27,7 @@ func (g *Game) Move(move Move) error {
 }
 
 func (g *Game) MakeMove(move Move) {
-	g.updateBitboardsWithMove(move)
+	g.makeMoveBitboard(move)
 	var currentGameState uint32 = 0
 	originalCastleRights := g.currentGameState & 15
 	newCastleState := originalCastleRights
@@ -40,14 +40,14 @@ func (g *Game) MakeMove(move Move) {
 		colorToMove = Black
 	}
 
-	capturedPieceType := g.Board[moveTo].pieceType()
+	capturedPiece := g.Board[moveTo]
 	movePiece := g.Board[moveFrom]
 	originalPieceType := movePiece.pieceType()
 	movePieceType := movePiece.pieceType()
 
 	isPromotion := move.Flag == PromoteToQueen || move.Flag == PromoteToKnight || move.Flag == PromoteToRook || move.Flag == PromoteToBishop
 
-	currentGameState |= uint32(capturedPieceType) << 8
+	currentGameState |= uint32(capturedPiece.Type) << 8
 	// if capturedPieceType != None && move.Flag != EnPassantCapture {
 	// 	g.Board[moveTo] = Piece{None}
 	// }
@@ -82,8 +82,8 @@ func (g *Game) MakeMove(move Move) {
 		} else {
 			epPawnSquare = moveTo + 8
 		}
-		currentGameState |= uint32((g.Board[epPawnSquare]).pieceType()) << 8 // add pawn as capture type
-		g.Board[epPawnSquare] = Piece{None}                                  // clear en passant square
+		currentGameState |= uint32(g.Board[epPawnSquare].Type) << 8 // add pawn as capture type
+		g.Board[epPawnSquare] = Piece{None}                         // clear en passant square
 		// fmt.Printf("Pawns Bitboard before:\n%s", bitboardString(g.pawnsBitBoard))
 		// fmt.Printf("En Passant mask:\n%s", bitboardString(^(1 << epPawnSquare)))
 		// g.pawnsBitBoard &= ^(1 << epPawnSquare) // Removes captured pawn
@@ -194,12 +194,13 @@ func (g *Game) MakeMove(move Move) {
 
 	g.fiftyMoveCounter++
 
-	if originalPieceType == Pawn || capturedPieceType != None {
+	if originalPieceType == Pawn || capturedPiece.Type != None {
 		g.fiftyMoveCounter = 0
 	}
 }
 
 func (g *Game) UnmakeMove(move Move) {
+	g.unmakeMoveBitboard(move)
 	g.ColorToMove = !g.ColorToMove // color is the color that made the move
 
 	colorToMove := White
@@ -362,18 +363,148 @@ func (g *Game) UnmakeMove(move Move) {
 	g.currentGameState = currentGameState
 }
 
-func (g *Game) updateBitboardsWithMove(move Move) {
-	pieceToMove := g.Board[move.StartSquare].Type
-	pieceToCapture := g.Board[move.TargetSquare].Type
+func (g *Game) makeMoveBitboard(move Move) {
+	moveFrom := move.StartSquare
+	moveTo := move.TargetSquare
 
-	g.bitboards[pieceToMove] ^= 1<<move.StartSquare | 1<<move.TargetSquare
-	if pieceToCapture != None {
-		g.bitboards[pieceToCapture] ^= 1 << move.TargetSquare
+	pieceToMove := g.Board[moveFrom].Type
+	pieceToCapture := g.Board[moveTo].Type
+
+	switch move.Flag {
+	case EnPassantCapture:
+		epPawnSquare := 0
+		if g.ColorToMove {
+			epPawnSquare = moveTo - 8
+		} else {
+			epPawnSquare = moveTo + 8
+		}
+		g.bitboards[pieceToMove] ^= 1<<moveFrom | 1<<moveTo
+		g.bitboards[pieceToCapture] ^= 1 << epPawnSquare
+	case Castling:
+		kingside := false
+		if g.ColorToMove {
+			kingside = moveTo == 6 // g1
+		} else {
+			kingside = moveTo == 62 // g8
+		}
+		rookMoveFrom := 0
+		rookMoveTo := 0
+		if kingside {
+			rookMoveFrom = moveTo + 1
+			rookMoveTo = moveTo - 1
+		} else {
+			rookMoveFrom = moveTo - 2
+			rookMoveTo = moveTo + 1
+		}
+		rook := None
+		if g.ColorToMove {
+			rook |= White
+		} else {
+			rook |= Black
+		}
+		g.bitboards[pieceToMove] ^= 1<<moveFrom | 1<<moveTo
+		g.bitboards[rook] ^= 1<<rookMoveFrom | 1<<rookMoveTo
+	case PromoteToQueen, PromoteToKnight, PromoteToRook, PromoteToBishop:
+		promoteType := 0
+		switch move.Flag {
+		case PromoteToQueen:
+			promoteType = Queen
+		case PromoteToKnight:
+			promoteType = Knight
+		case PromoteToRook:
+			promoteType = Rook
+		case PromoteToBishop:
+			promoteType = Bishop
+		}
+		if g.ColorToMove {
+			promoteType |= White
+		} else {
+			promoteType |= Black
+		}
+		g.bitboards[pieceToMove] ^= 1 << moveFrom
+		g.bitboards[promoteType] ^= 1 << moveTo
+		if pieceToCapture != None {
+			g.bitboards[pieceToCapture] ^= 1 << moveTo
+		}
+	case NoFlag:
+		g.bitboards[pieceToMove] ^= 1<<move.StartSquare | 1<<move.TargetSquare
+		if pieceToCapture != None {
+			g.bitboards[pieceToCapture] ^= 1 << move.TargetSquare
+		}
 	}
-	fmt.Println(g.BitBoards())
+
 }
 
-// func (g *Game) undoBitboardsWithMove(move Move) {
-// 	pieceMoved := g.Board[move.TargetSquare].Type
+func (g *Game) unmakeMoveBitboard(move Move) {
+	movedFrom := move.StartSquare
+	movedTo := move.TargetSquare
 
-// }
+	pieceMoved := g.Board[move.TargetSquare].Type
+	pieceCaptured := (g.currentGameState >> 8) & 0b111111
+
+	switch move.Flag {
+	case EnPassantCapture:
+		epPawnSquare := 0
+		if !g.ColorToMove {
+			epPawnSquare = movedTo - 8
+		} else {
+			epPawnSquare = movedTo + 8
+		}
+		g.bitboards[pieceMoved] ^= 1<<movedTo | 1<<movedFrom
+		g.bitboards[pieceCaptured] ^= 1 << epPawnSquare
+	case Castling:
+		kingside := false
+		if !g.ColorToMove {
+			kingside = movedTo == 6 // g1
+		} else {
+			kingside = movedTo == 62 // g8
+		}
+		rookMovedTo := 0
+		rookMovedFrom := 0
+		if kingside {
+			rookMovedTo = movedTo - 1
+			rookMovedFrom = movedTo + 1
+		} else {
+			rookMovedTo = movedTo + 1
+			rookMovedFrom = movedTo - 2
+		}
+		rook := Rook
+		if !g.ColorToMove {
+			rook |= White
+		} else {
+			rook |= Black
+		}
+		g.bitboards[pieceMoved] ^= 1<<movedTo | 1<<movedFrom
+		g.bitboards[rook] ^= 1<<rookMovedTo | 1<<rookMovedFrom
+	case PromoteToQueen, PromoteToKnight, PromoteToRook, PromoteToBishop:
+		promoteType := 0
+		switch move.Flag {
+		case PromoteToQueen:
+			promoteType = Queen
+		case PromoteToKnight:
+			promoteType = Knight
+		case PromoteToRook:
+			promoteType = Rook
+		case PromoteToBishop:
+			promoteType = Bishop
+		}
+		pawn := Pawn
+		if g.ColorToMove {
+			promoteType |= White
+			pawn |= White
+		} else {
+			promoteType |= Black
+			pawn |= Black
+		}
+		g.bitboards[pawn] ^= 1 << movedFrom
+		g.bitboards[promoteType] ^= 1 << movedTo
+		if pieceCaptured != None {
+			g.bitboards[pieceCaptured] ^= 1 << movedTo
+		}
+	case NoFlag:
+		g.bitboards[pieceMoved] ^= 1<<move.TargetSquare | 1<<move.StartSquare
+		if pieceCaptured != None {
+			g.bitboards[pieceCaptured] ^= 1 << move.TargetSquare
+		}
+	}
+}

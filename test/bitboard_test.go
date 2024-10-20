@@ -20,7 +20,7 @@ func bitboardString(bitboard uint64) string {
 func bitboardsEqual(bitboards1, bitboards2 [23]uint64) ([]int, bool) {
 	equal := true
 	indices := []int{}
-	for i := 0; i < 8; i++ {
+	for i := 0; i < len(bitboards1); i++ {
 		if bitboards1[i] != bitboards2[i] {
 			equal = false
 			indices = append(indices, i)
@@ -29,9 +29,10 @@ func bitboardsEqual(bitboards1, bitboards2 [23]uint64) ([]int, bool) {
 	return indices, equal
 }
 
-func handleBitBoardMismatch(bitboards [23]uint64, bitboardsAfter [23]uint64, indices []int, t *testing.T) {
+func handleBitBoardMismatch(bitboards, bitboardsAfter [23]uint64, indices []int, t *testing.T) {
 	errorString := ""
-	for i := range indices {
+	fmt.Println(indices)
+	for _, i := range indices {
 		bitboardStr := bitboardString(bitboards[i])
 		bitboardAfterStr := bitboardString(bitboardsAfter[i])
 		errorString += fmt.Sprintf("\nBitboard[%d] not equal:\n%s!=\n%s", i, bitboardStr, bitboardAfterStr)
@@ -83,6 +84,7 @@ func TestBitBoardAfterCastling(t *testing.T) {
 
 	move := game.Move{StartSquare: 4, TargetSquare: 6, Flag: game.Castling}
 	g.Move(move)
+
 	g.UnmakeMove(move)
 
 	bitboardsAfter := g.BitBoards()
