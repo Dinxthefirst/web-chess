@@ -11,17 +11,16 @@ var NumSquaresToEdge [BoardSize * BoardSize][8]int
 
 // var opponentAttackMap uint64
 // var opponentAttackMapSliding uint64
-var whiteKingsideFarAttacked bool
-var whiteKingsideCloseAttacked bool
+var whiteKingsideAttacked bool
 
-var whiteQueensideFarAttacked bool
-var whiteQueensideCloseAttacked bool
+var whiteQueensideAttacked bool
 
-var blackKingsideFarAttacked bool
-var blackKingsideCloseAttacked bool
+var blackKingsideAttacked bool
 
-var blackQueensideFarAttacked bool
-var blackQueensideCloseAttacked bool
+var blackQueensideAttacked bool
+
+var whiteKingAttacked bool
+var blackKingAttacked bool
 
 func precomputedMoveData() {
 	for file := 0; file < BoardSize; file++ {
@@ -238,7 +237,6 @@ func (g *Game) generateCastlingMoves(startSquare int, inSearch bool) []Move {
 	if inSearch {
 		return moves
 	}
-	g.generateCastleAttackedSquares()
 
 	if g.currentGameState&0b1111 == 0 {
 		return moves
@@ -246,11 +244,12 @@ func (g *Game) generateCastlingMoves(startSquare int, inSearch bool) []Move {
 
 	castlingRights := g.currentGameState & 0b1111
 	if g.ColorToMove {
+		g.generateCastleAttackedSquares()
 		if ((castlingRights >> 3) & 1) == 1 {
 			bishopMoved := g.Board[fromChessNotation("f1")].pieceType() == None
 			knightMoved := g.Board[fromChessNotation("g1")].pieceType() == None
 			if bishopMoved && knightMoved {
-				if !whiteKingsideFarAttacked && !whiteKingsideCloseAttacked {
+				if !whiteKingsideAttacked && !whiteKingAttacked {
 					moves = append(moves, Move{startSquare, 6, Castling})
 				}
 			}
@@ -260,7 +259,7 @@ func (g *Game) generateCastlingMoves(startSquare int, inSearch bool) []Move {
 			bishopMoved := g.Board[fromChessNotation("c1")].pieceType() == None
 			queenMoved := g.Board[fromChessNotation("d1")].pieceType() == None
 			if knightMoved && bishopMoved && queenMoved {
-				if !whiteQueensideFarAttacked && !whiteQueensideCloseAttacked {
+				if !whiteQueensideAttacked && !whiteKingAttacked {
 					moves = append(moves, Move{startSquare, 2, Castling})
 				}
 			}
@@ -270,7 +269,7 @@ func (g *Game) generateCastlingMoves(startSquare int, inSearch bool) []Move {
 			bishopMoved := g.Board[fromChessNotation("f8")].pieceType() == None
 			knightMoved := g.Board[fromChessNotation("g8")].pieceType() == None
 			if bishopMoved && knightMoved {
-				if !blackKingsideFarAttacked && !blackKingsideCloseAttacked {
+				if !blackKingsideAttacked && !blackKingAttacked {
 					moves = append(moves, Move{startSquare, 62, Castling})
 				}
 			}
@@ -280,7 +279,7 @@ func (g *Game) generateCastlingMoves(startSquare int, inSearch bool) []Move {
 			bishopMoved := g.Board[fromChessNotation("c8")].pieceType() == None
 			queenMoved := g.Board[fromChessNotation("d8")].pieceType() == None
 			if knightMoved && bishopMoved && queenMoved {
-				if !blackQueensideFarAttacked && !blackQueensideCloseAttacked {
+				if !blackQueensideAttacked && !blackKingAttacked {
 					moves = append(moves, Move{startSquare, 58, Castling})
 				}
 			}
@@ -293,36 +292,26 @@ func (g *Game) generateCastlingMoves(startSquare int, inSearch bool) []Move {
 func (g *Game) generateCastleAttackedSquares() {
 	opponentColor := !g.ColorToMove
 
-	whiteKingsideFarAttacked = false
-	whiteKingsideCloseAttacked = false
-	whiteQueensideFarAttacked = false
-	whiteQueensideCloseAttacked = false
-	blackKingsideFarAttacked = false
-	blackKingsideCloseAttacked = false
-	blackQueensideFarAttacked = false
-	blackQueensideCloseAttacked = false
+	whiteKingsideAttacked = false
+	whiteQueensideAttacked = false
+	blackKingsideAttacked = false
+	blackQueensideAttacked = false
+	whiteKingAttacked = false
+	blackKingAttacked = false
 
 	for _, move := range g.generateMovesForColor(opponentColor, true) {
-		if whiteKingsideFarAttacked && whiteQueensideFarAttacked && blackKingsideFarAttacked && blackQueensideFarAttacked && whiteKingsideCloseAttacked && whiteQueensideCloseAttacked && blackKingsideCloseAttacked && blackQueensideCloseAttacked {
-			return
-		}
-
-		if move.TargetSquare == 6 {
-			whiteKingsideFarAttacked = true
-		} else if move.TargetSquare == 5 {
-			whiteKingsideCloseAttacked = true
-		} else if move.TargetSquare == 2 {
-			whiteQueensideFarAttacked = true
+		if move.TargetSquare == 5 {
+			whiteKingsideAttacked = true
 		} else if move.TargetSquare == 3 {
-			whiteQueensideCloseAttacked = true
-		} else if move.TargetSquare == 62 {
-			blackKingsideFarAttacked = true
+			whiteQueensideAttacked = true
 		} else if move.TargetSquare == 61 {
-			blackKingsideCloseAttacked = true
-		} else if move.TargetSquare == 58 {
-			blackQueensideFarAttacked = true
+			blackKingsideAttacked = true
 		} else if move.TargetSquare == 59 {
-			blackQueensideCloseAttacked = true
+			blackQueensideAttacked = true
+		} else if move.TargetSquare == 4 {
+			whiteKingAttacked = true
+		} else if move.TargetSquare == 60 {
+			blackKingAttacked = true
 		}
 	}
 }
