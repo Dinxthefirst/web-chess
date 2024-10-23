@@ -348,7 +348,7 @@ func (g *Game) generatePawnMoves(startSquare int, inSearch bool) []Move {
 			}
 		}
 
-		enPassantFile := g.currentGameState >> 4 & 0b111
+		enPassantFile := g.currentGameState >> 4 & 0b1111
 		if enPassantFile == 0 {
 			continue
 		}
