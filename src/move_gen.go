@@ -121,7 +121,7 @@ func (g *Game) generateMovesForColor(color bool, inSearch bool) []Move {
 		case King:
 			moves = append(moves, g.generateKingMoves(startSquare, inSearch)...)
 		case Pawn:
-			moves = append(moves, g.generatePawnMoves(startSquare)...)
+			moves = append(moves, g.generatePawnMoves(startSquare, inSearch)...)
 		case Knight:
 			moves = append(moves, g.generateKnightMoves(startSquare)...)
 		case Bishop, Rook, Queen:
@@ -286,7 +286,7 @@ func (g *Game) generateCastlingMoves(startSquare int, inSearch bool) []Move {
 	return moves
 }
 
-func (g *Game) generatePawnMoves(startSquare int) []Move {
+func (g *Game) generatePawnMoves(startSquare int, inSearch bool) []Move {
 	piece := g.Board[startSquare]
 
 	moves := []Move{}
@@ -329,6 +329,11 @@ func (g *Game) generatePawnMoves(startSquare int) []Move {
 		startFile := startSquare % BoardSize
 		targetFile := targetSquare % BoardSize
 		if abs(startFile-targetFile) != 1 {
+			continue
+		}
+
+		if inSearch {
+			moves = append(moves, Move{startSquare, targetSquare, NoFlag})
 			continue
 		}
 
