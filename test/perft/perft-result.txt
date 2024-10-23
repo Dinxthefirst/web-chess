@@ -1,9 +1,10 @@
 Running perft with depth 5 with position 1
 Depth: 1, Result: 20, Time: 0s
-Depth: 2, Result: 400, Time: 1.5314ms
-Depth: 3, Result: 8902, Time: 24.9702ms
-Depth: 4, Result: 197281, Time: 612.2396ms
-Depth: 5, Result: 4865591, Time: 14.3533675s - INCORRECT, expected 4865609
+Depth: 2, Result: 400, Time: 1.9956ms
+Depth: 3, Result: 8902, Time: 24.9992ms
+Depth: 4, Result: 197281, Time: 596.0916ms
+Depth: 5, Result: 4865609, Time: 15.0990763s
+Depth: 6, Result: 119060324, Time: 6m22.504894s
 Running perft with depth 5 with position 2
 Depth: 1, Result: 48, Time: 0s
 Depth: 2, Result: 2039, Time: 8.5716ms
@@ -23,11 +24,11 @@ Depth: 3, Result: 9467, Time: 41.152ms
 Depth: 4, Result: 422333, Time: 1.861458s
 Depth: 5, Result: 15833292, Time: 1m9.7802898s
 Running perft with depth 5 with position 5
-Depth: 1, Result: 44, Time: 511µs
-Depth: 2, Result: 1486, Time: 5.6187ms
-Depth: 3, Result: 62379, Time: 235.916ms
-Depth: 4, Result: 2103487, Time: 8.9002523s
-Depth: 5, Result: 89941166, Time: 5m44.3384443s - INCORRECT, expected 89941194
+Depth: 1, Result: 44, Time: 0s
+Depth: 2, Result: 1486, Time: 7.0526ms
+Depth: 3, Result: 62379, Time: 217.1722ms
+Depth: 4, Result: 2103487, Time: 8.2058918s
+Depth: 5, Result: 89941194, Time: 5m47.4707554s
 Running perft with depth 5 with position 6
 Depth: 1, Result: 46, Time: 0s
 Depth: 2, Result: 2079, Time: 8.6583ms

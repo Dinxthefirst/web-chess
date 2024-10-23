@@ -289,6 +289,26 @@ func TestPawnEnPassant(t *testing.T) {
 	}
 }
 
+func TestPawnEnPassantAgain(t *testing.T) {
+	g := game.NewGame()
+
+	g.Move(game.Move{StartSquare: 13, TargetSquare: 29}) // f4
+	g.Move(game.Move{StartSquare: 54, TargetSquare: 38}) // g5
+	g.Move(game.Move{StartSquare: 29, TargetSquare: 38}) // fxg5
+	g.Move(game.Move{StartSquare: 55, TargetSquare: 39}) // h5
+
+	pawnMoves := g.LegalMovesAtIndex(38)
+
+	expectedMoves := []game.Move{
+		{StartSquare: 38, TargetSquare: 46},
+		{StartSquare: 38, TargetSquare: 47},
+	}
+
+	if !movesEqual(expectedMoves, pawnMoves) {
+		t.Error(compareMovesErrorMessage(expectedMoves, pawnMoves))
+	}
+}
+
 func TestCastling(t *testing.T) {
 	castlingFen := "4k3/8/8/8/8/8/8/R3K3 w Q - 0 1"
 
