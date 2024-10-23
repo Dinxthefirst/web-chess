@@ -29,14 +29,6 @@ type Game struct {
 	// 1: white, 0: black
 	ColorToMove bool `json:"ColorToMove"`
 	bitboards   [23]uint64
-	// kingsBitBoard       uint64
-	// pawnsBitBoard       uint64
-	// knightsBitBoard     uint64
-	// bishopsBitBoard     uint64
-	// rooksBitBoard       uint64
-	// queensBitBoard      uint64
-	// whitePiecesBitBoard uint64
-	// blackPiecesBitBoard uint64
 	// Bits 0-3: white and black kingside/queen side castling rights
 	//
 	// Bit 0: black queenside,
