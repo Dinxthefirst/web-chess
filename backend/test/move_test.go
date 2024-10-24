@@ -3,7 +3,7 @@ package test
 import (
 	"fmt"
 	"testing"
-	game "web-chess/src"
+	game "web-chess/backend/src"
 )
 
 func compareMovesErrorMessage(expected, got []game.Move) string {

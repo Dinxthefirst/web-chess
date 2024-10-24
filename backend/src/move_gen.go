@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"web-chess/backend/util"
 )
 
 var DirectionOffsets = [BoardSize]int{8, -8, 1, -1, 7, -7, 9, -9}
@@ -180,7 +181,7 @@ func (g *Game) generateKnightMoves(startSquare int) []Move {
 		targetRank := targetSquare / BoardSize
 		targetFile := targetSquare % BoardSize
 
-		if abs(rank-targetRank) > 2 || abs(file-targetFile) > 2 {
+		if util.Abs(rank-targetRank) > 2 || util.Abs(file-targetFile) > 2 {
 			continue
 		}
 
@@ -235,8 +236,8 @@ func (g *Game) generateCastlingMoves(startSquare int, inSearch bool) []Move {
 	castlingRights := g.currentGameState & 0b1111
 	if g.ColorToMove {
 		if ((castlingRights >> 3) & 1) == 1 {
-			bishopMoved := g.Board[fromChessNotation("f1")] == Piece{None}
-			knightMoved := g.Board[fromChessNotation("g1")] == Piece{None}
+			bishopMoved := g.Board[util.FromChessNotation("f1")] == Piece{None}
+			knightMoved := g.Board[util.FromChessNotation("g1")] == Piece{None}
 			if bishopMoved && knightMoved {
 				isWhiteKingAttacked := g.isSquareAttacked(4, g.ColorToMove)
 				isWhiteKingsideAttacked := g.isSquareAttacked(5, g.ColorToMove)
@@ -246,9 +247,9 @@ func (g *Game) generateCastlingMoves(startSquare int, inSearch bool) []Move {
 			}
 		}
 		if ((castlingRights >> 2) & 1) == 1 {
-			knightMoved := g.Board[fromChessNotation("b1")] == Piece{None}
-			bishopMoved := g.Board[fromChessNotation("c1")] == Piece{None}
-			queenMoved := g.Board[fromChessNotation("d1")] == Piece{None}
+			knightMoved := g.Board[util.FromChessNotation("b1")] == Piece{None}
+			bishopMoved := g.Board[util.FromChessNotation("c1")] == Piece{None}
+			queenMoved := g.Board[util.FromChessNotation("d1")] == Piece{None}
 			if knightMoved && bishopMoved && queenMoved {
 				isWhiteKingAttacked := g.isSquareAttacked(4, g.ColorToMove)
 				isWhiteQueensideAttacked := g.isSquareAttacked(3, g.ColorToMove)
@@ -259,8 +260,8 @@ func (g *Game) generateCastlingMoves(startSquare int, inSearch bool) []Move {
 		}
 	} else {
 		if ((castlingRights >> 1) & 1) == 1 {
-			bishopMoved := g.Board[fromChessNotation("f8")] == Piece{None}
-			knightMoved := g.Board[fromChessNotation("g8")] == Piece{None}
+			bishopMoved := g.Board[util.FromChessNotation("f8")] == Piece{None}
+			knightMoved := g.Board[util.FromChessNotation("g8")] == Piece{None}
 			if bishopMoved && knightMoved {
 				isBlackKingAttacked := g.isSquareAttacked(60, g.ColorToMove)
 				isBlackKingsideAttacked := g.isSquareAttacked(61, g.ColorToMove)
@@ -270,9 +271,9 @@ func (g *Game) generateCastlingMoves(startSquare int, inSearch bool) []Move {
 			}
 		}
 		if (castlingRights & 1) == 1 {
-			knightMoved := g.Board[fromChessNotation("b8")] == Piece{None}
-			bishopMoved := g.Board[fromChessNotation("c8")] == Piece{None}
-			queenMoved := g.Board[fromChessNotation("d8")] == Piece{None}
+			knightMoved := g.Board[util.FromChessNotation("b8")] == Piece{None}
+			bishopMoved := g.Board[util.FromChessNotation("c8")] == Piece{None}
+			queenMoved := g.Board[util.FromChessNotation("d8")] == Piece{None}
 			if knightMoved && bishopMoved && queenMoved {
 				isBlackKingAttacked := g.isSquareAttacked(60, g.ColorToMove)
 				isBlackQueensideAttacked := g.isSquareAttacked(59, g.ColorToMove)
@@ -328,7 +329,7 @@ func (g *Game) generatePawnMoves(startSquare int, inSearch bool) []Move {
 
 		startFile := startSquare % BoardSize
 		targetFile := targetSquare % BoardSize
-		if abs(startFile-targetFile) != 1 {
+		if util.Abs(startFile-targetFile) != 1 {
 			continue
 		}
 

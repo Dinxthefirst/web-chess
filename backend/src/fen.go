@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"web-chess/backend/util"
 )
 
 func (g *Game) loadPositionFromFen(fen string) error {
@@ -33,7 +34,7 @@ func (g *Game) loadPositionFromFen(fen string) error {
 	currentGameState |= newCastleState
 
 	if enPassantSquare != "-" {
-		enPassantIndex := fromChessNotation(enPassantSquare)
+		enPassantIndex := util.FromChessNotation(enPassantSquare)
 		enPassantFile := enPassantIndex % BoardSize
 		currentGameState |= uint32(enPassantFile+1) << 4
 	}
@@ -153,7 +154,7 @@ func (g *Game) CurrentFen() string {
 		if !g.ColorToMove {
 			enPassantRank = 2
 		}
-		fen += toChessNotation(enPassantRank*BoardSize + int(enPassantFile-1))
+		fen += util.ToChessNotation(enPassantRank*BoardSize + int(enPassantFile-1))
 	}
 
 	fen += " "
@@ -163,4 +164,84 @@ func (g *Game) CurrentFen() string {
 	fen += strconv.Itoa(int(g.plyCount))
 
 	return fen
+}
+
+func parseFen(fen string) (pieces, color, castlingRights, enPassantSquare string, fiftyMoveCounter, plyCount uint32, err error) {
+	splitFen := strings.Split(fen, " ")
+	pieces = splitFen[0]
+	color = splitFen[1]
+	castlingRights = splitFen[2]
+	enPassantSquare = splitFen[3]
+	fiftyMoveCounterInt, err := strconv.Atoi(splitFen[4])
+	if err != nil {
+		return "", "", "", "", 0, 0, err
+	}
+	fiftyMoveCounter = uint32(fiftyMoveCounterInt)
+
+	plyCountInt, err := strconv.Atoi(splitFen[5])
+	if err != nil {
+		return "", "", "", "", 0, 0, err
+	}
+	plyCount = uint32(plyCountInt)
+	return pieces, color, castlingRights, enPassantSquare, fiftyMoveCounter, plyCount, nil
+}
+
+func createPiece(char rune) Piece {
+	color := White
+	if char >= 'a' && char <= 'z' {
+		color = Black
+	}
+	pieceType := None
+	switch char {
+	case 'p', 'P':
+		pieceType = Pawn
+	case 'n', 'N':
+		pieceType = Knight
+	case 'b', 'B':
+		pieceType = Bishop
+	case 'r', 'R':
+		pieceType = Rook
+	case 'q', 'Q':
+		pieceType = Queen
+	case 'k', 'K':
+		pieceType = King
+	}
+	return Piece{pieceType | color}
+}
+
+func symbolForPiece(piece Piece) string {
+	color := piece.color()
+	pieceType := piece.pieceType()
+	if color == White {
+		switch pieceType {
+		case Pawn:
+			return "P"
+		case Knight:
+			return "N"
+		case Bishop:
+			return "B"
+		case Rook:
+			return "R"
+		case Queen:
+			return "Q"
+		case King:
+			return "K"
+		}
+	} else {
+		switch pieceType {
+		case Pawn:
+			return "p"
+		case Knight:
+			return "n"
+		case Bishop:
+			return "b"
+		case Rook:
+			return "r"
+		case Queen:
+			return "q"
+		case King:
+			return "k"
+		}
+	}
+	return ""
 }

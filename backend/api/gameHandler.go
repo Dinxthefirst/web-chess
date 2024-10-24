@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	game "web-chess/src"
+	game "web-chess/backend/src"
 
 	"github.com/gorilla/mux"
 )
