@@ -11,12 +11,13 @@ Depth: 2, Result: 2039, Time: 8.5716ms
 Depth: 3, Result: 97862, Time: 400.0194ms
 Depth: 4, Result: 4085603, Time: 17.9788252s
 Depth: 5, Result: 193690690, Time: 13m57.0497345s
-Running perft with depth 5 with position 3
-Depth: 1, Result: 14, Time: 0s
-Depth: 2, Result: 191, Time: 0s
-Depth: 3, Result: 2812, Time: 6.5847ms
-Depth: 4, Result: 43238, Time: 97.4849ms
-Depth: 5, Result: 674624, Time: 1.4167361s
+Running perft with depth 6 with position 3
+Depth: 1, Result: 14, Time: 65.105µs
+Depth: 2, Result: 191, Time: 923.247µs
+Depth: 3, Result: 2812, Time: 11.539279ms
+Depth: 4, Result: 43238, Time: 118.037373ms
+Depth: 5, Result: 674624, Time: 1.713997648s
+Depth: 6, Result: 11030083, Time: 27.916066245s
 Running perft with depth 5 with position 4
 Depth: 1, Result: 6, Time: 505.4µs
 Depth: 2, Result: 264, Time: 1.1037ms
