@@ -28,6 +28,7 @@ type Game struct {
 	Board [BoardSize * BoardSize]Piece `json:"board"`
 	// 1: white, 0: black
 	ColorToMove bool `json:"ColorToMove"`
+	bitboards   [23]uint64
 	// Bits 0-3: white and black kingside/queen side castling rights
 	//
 	// Bit 0: black queenside,
@@ -46,6 +47,11 @@ type Game struct {
 	gameStateHistory []uint32
 	fiftyMoveCounter uint32
 	plyCount         uint32
+}
+
+func (g *Game) BitBoards() [23]uint64 {
+	// return [8]uint64{g.kingsBitBoard, g.pawnsBitBoard, g.knightsBitBoard, g.bishopsBitBoard, g.rooksBitBoard, g.queensBitBoard, g.whitePiecesBitBoard, g.blackPiecesBitBoard}
+	return g.bitboards
 }
 
 const (

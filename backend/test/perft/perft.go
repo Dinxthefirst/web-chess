@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"time"
-	game "web-chess/src"
+	game "web-chess/backend/src"
 )
 
 var actualResults = map[int]map[int]uint64{

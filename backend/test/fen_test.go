@@ -2,7 +2,7 @@ package test
 
 import (
 	"testing"
-	game "web-chess/src"
+	game "web-chess/backend/src"
 )
 
 func compareFenStringErrorMessage(expected, got string) string {
