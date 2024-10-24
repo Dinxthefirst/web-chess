@@ -31,6 +31,7 @@ var actualResults = map[int]map[int]uint64{
 		3: 2812,
 		4: 43238,
 		5: 674624,
+		6: 11030083,
 	},
 	4: {
 		1: 6,
